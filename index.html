@@ -197,6 +197,21 @@
   .date-nav .icon-btn{flex:0 0 auto;}
   .week-summary{text-align:center; font-size:12px; color:var(--muted-2); margin-bottom:12px;}
 
+  /* ---------- Connections: compare view ---------- */
+  .mini-session{padding:8px 0; border-bottom:1px solid var(--border);}
+  .mini-session:last-child{border-bottom:none;}
+  .mini-session .mtime{font-size:10.5px; font-weight:700; color:var(--accent); letter-spacing:0.2px;}
+  .mini-session .mcourse{font-size:12px; font-weight:600; margin-top:2px; line-height:1.3; overflow-wrap:anywhere;}
+  .mini-empty{font-size:12px; color:var(--muted-2); padding:6px 0;}
+  .free-together{
+    padding:13px 14px; border-radius:var(--radius-m); margin-bottom:14px; font-size:13px;
+    background:var(--good-soft); border:1px solid rgba(52,199,123,0.3);
+  }
+  .free-together.none{background:var(--surface-2); border-color:var(--border);}
+  .free-together .ft-title{font-weight:700; margin-bottom:5px; font-size:12.5px; color:var(--good);}
+  .free-together.none .ft-title{color:var(--muted);}
+  .free-together .ft-windows{color:var(--text); line-height:1.7;}
+
   /* ---------- Context banner (viewing friend) ---------- */
   .context-banner{
     display:flex; align-items:center; gap:10px; padding:11px 14px; border-radius:var(--radius-m);
@@ -415,13 +430,42 @@
 
     <!-- ============ CONNECTIONS ============ -->
     <section class="view" id="view-connections">
-      <div class="eyebrow">CONNECTIONS</div>
-      <h1 class="page-title">Find a classmate</h1>
-      <input type="text" id="conn-search" placeholder="Search by name or roll number…" autocomplete="off">
-      <div class="results-scroll" id="conn-results" style="max-height:none; margin-top:12px;"></div>
 
-      <h2 class="section-title">Your friends</h2>
-      <div id="conn-friends" class="stack"></div>
+      <div id="conn-main">
+        <div class="eyebrow">CONNECTIONS</div>
+        <h1 class="page-title">Find a classmate</h1>
+        <input type="text" id="conn-search" placeholder="Search by name or roll number…" autocomplete="off">
+        <div class="results-scroll" id="conn-results" style="max-height:none; margin-top:12px;"></div>
+
+        <h2 class="section-title">Your friends</h2>
+        <div id="conn-friends" class="stack"></div>
+      </div>
+
+      <div id="conn-compare" style="display:none;">
+        <a id="conn-compare-back" style="color:var(--accent); font-size:13px; font-weight:600; cursor:pointer; display:inline-block; margin-bottom:14px;">‹ Back to friends</a>
+        <div class="eyebrow">COMPARE</div>
+        <h1 class="page-title" id="conn-compare-title" style="margin-bottom:14px;">You &amp; —</h1>
+
+        <div class="date-nav">
+          <div class="icon-btn" id="conn-compare-prev" title="Previous day">‹</div>
+          <div class="date-label" id="conn-compare-date-label">—</div>
+          <div class="icon-btn" id="conn-compare-next" title="Next day">›</div>
+        </div>
+
+        <div id="conn-compare-free-slot"></div>
+
+        <div class="stats-row" style="margin-bottom:6px;">
+          <div class="stat" style="text-align:left; padding:14px;">
+            <div class="lbl" style="margin-bottom:8px;">YOU</div>
+            <div id="conn-compare-me" class="stack"></div>
+          </div>
+          <div class="stat" style="text-align:left; padding:14px;">
+            <div class="lbl" style="margin-bottom:8px;" id="conn-compare-friend-lbl">FRIEND</div>
+            <div id="conn-compare-friend" class="stack"></div>
+          </div>
+        </div>
+      </div>
+
     </section>
 
   </main>
@@ -676,9 +720,22 @@ const EMBEDDED_DATA = {"courses": {"GSEC": {"code": "GSEC", "name": "Growth Stra
   // A device that got in via a buyer code is re-checked against Firebase —
   // if the owner has since revoked that specific code, access is pulled.
   async function verifyAccessStillValid(){
+    let isAdmin = null;
+    try{ isAdmin = await storeGet(IS_ADMIN_KEY); }catch(e){}
+    if(isAdmin === 'true') return true; // owner sessions are never revoked this way
+
     let code = null;
     try{ code = await storeGet(REDEEMED_CODE_KEY); }catch(e){}
-    if(!code) return true;
+    if(!code){
+      // A buyer session with no code on record — can only happen for a
+      // session created before this check existed. There's nothing to
+      // verify it against, so require a fresh sign-in rather than trust it.
+      await storeDelete(PASSCODE_VERIFIED_KEY);
+      await storeDelete(REDEEMED_CODE_KEY);
+      await storeDelete('identity');
+      await storeDelete(IS_ADMIN_KEY);
+      return false;
+    }
     const codes = await getAccessCodes();
     const entry = codes[code];
     if(!entry || entry.revoked){
@@ -1101,9 +1158,13 @@ const EMBEDDED_DATA = {"courses": {"GSEC": {"code": "GSEC", "name": "Growth Stra
     ttDate: todayStr() < TERM_START ? TERM_START : (todayStr() > TERM_END ? TERM_END : todayStr()),
     ttFormat: 'name',
     currentView: 'onboard',
+    compareRoll: null,  // friend roll number currently being compared, in Connections
+    compareDate: todayStr() < TERM_START ? TERM_START : (todayStr() > TERM_END ? TERM_END : todayStr()),
   };
   if(state.ttDate < TERM_START) state.ttDate = TERM_START;
   if(state.ttDate > TERM_END) state.ttDate = TERM_END;
+  if(state.compareDate < TERM_START) state.compareDate = TERM_START;
+  if(state.compareDate > TERM_END) state.compareDate = TERM_END;
 
   /* ---------------- View switching ---------------- */
   function showView(name){
@@ -1463,6 +1524,14 @@ const EMBEDDED_DATA = {"courses": {"GSEC": {"code": "GSEC", "name": "Growth Stra
 
   /* ---------------- Connections ---------------- */
   function renderConnections(){
+    if(state.compareRoll){
+      $('#conn-main').style.display = 'none';
+      $('#conn-compare').style.display = 'block';
+      renderCompareView();
+      return;
+    }
+    $('#conn-main').style.display = 'block';
+    $('#conn-compare').style.display = 'none';
     renderConnResults($('#conn-search').value);
     renderFriendsList();
   }
@@ -1505,6 +1574,7 @@ const EMBEDDED_DATA = {"courses": {"GSEC": {"code": "GSEC", "name": "Growth Stra
         <div class="avatar">${initials(s.name)}</div>
         <div class="person-info"><div class="pname">${escapeHtml(s.name)}</div><div class="proll">${roll} · ${s.courses.length} courses</div></div>
         <div class="person-actions">
+          <button class="btn sm primary" data-act="compare" data-roll="${roll}">Compare</button>
           <button class="btn sm" data-act="view" data-roll="${roll}">View</button>
           <button class="btn sm danger-outline" data-act="remove" data-roll="${roll}">Remove</button>
         </div>
@@ -1520,6 +1590,10 @@ const EMBEDDED_DATA = {"courses": {"GSEC": {"code": "GSEC", "name": "Growth Stra
         if(act==='view'){
           state.viewing = roll;
           showView('timetable');
+        } else if(act==='compare'){
+          state.compareRoll = roll;
+          state.compareDate = todayStr() < TERM_START ? TERM_START : (todayStr() > TERM_END ? TERM_END : todayStr());
+          renderConnections();
         } else if(act==='friend'){
           if(!state.friends.includes(roll)){
             state.friends.push(roll);
@@ -1533,6 +1607,85 @@ const EMBEDDED_DATA = {"courses": {"GSEC": {"code": "GSEC", "name": "Growth Stra
         }
       });
     });
+  }
+
+  $('#conn-compare-back').addEventListener('click', ()=>{
+    state.compareRoll = null;
+    renderConnections();
+  });
+  $('#conn-compare-prev').addEventListener('click', ()=> shiftCompareDate(-1));
+  $('#conn-compare-next').addEventListener('click', ()=> shiftCompareDate(1));
+  function shiftCompareDate(n){
+    let d = addDays(state.compareDate, n);
+    if(d < TERM_START) d = TERM_START;
+    if(d > TERM_END) d = TERM_END;
+    state.compareDate = d;
+    renderCompareView();
+  }
+
+  // ---- Free-time-in-common math ----
+  function timeToMinutes(t){ const [h,m] = t.split(':').map(Number); return h*60+m; }
+  function minutesToHHMM(m){ return `${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`; }
+  function freeWindowsForBoth(sessionsA, sessionsB, dayStart='08:00', dayEnd='23:59'){
+    const busy = [...sessionsA, ...sessionsB].map(s => [timeToMinutes(s.start), timeToMinutes(s.end)]).sort((a,b)=>a[0]-b[0]);
+    const merged = [];
+    for(const [s,e] of busy){
+      if(merged.length && s <= merged[merged.length-1][1]){
+        merged[merged.length-1][1] = Math.max(merged[merged.length-1][1], e);
+      } else {
+        merged.push([s,e]);
+      }
+    }
+    const startMin = timeToMinutes(dayStart), endMin = timeToMinutes(dayEnd);
+    const free = [];
+    let cursor = startMin;
+    for(const [s,e] of merged){
+      if(s > cursor) free.push([cursor, Math.min(s,endMin)]);
+      cursor = Math.max(cursor, e);
+      if(cursor >= endMin) break;
+    }
+    if(cursor < endMin) free.push([cursor, endMin]);
+    return free.filter(([s,e]) => e > s);
+  }
+
+  function miniSessionListHtml(sessions){
+    if(sessions.length===0) return `<div class="mini-empty">No classes</div>`;
+    return sessions.map(sess=>{
+      const ci = courseInfo(sess.course_code_norm);
+      return `<div class="mini-session">
+        <div class="mtime">${to12h(sess.start)}–${to12h(sess.end)}</div>
+        <div class="mcourse">${escapeHtml(ci.code)}</div>
+      </div>`;
+    }).join('');
+  }
+
+  function renderCompareView(){
+    const friend = DATA.students[state.compareRoll];
+    if(!friend){ state.compareRoll = null; renderConnections(); return; }
+
+    $('#conn-compare-title').innerHTML = `You &amp; ${escapeHtml(friend.name.split(' ')[0])}`;
+    $('#conn-compare-friend-lbl').textContent = friend.name.split(' ')[0].toUpperCase();
+    $('#conn-compare-date-label').textContent = friendlyDate(state.compareDate);
+
+    const mySessions = sessionsFor(state.me).filter(s=>s.date===state.compareDate).sort((a,b)=>a.start.localeCompare(b.start));
+    const friendSessions = sessionsFor(state.compareRoll).filter(s=>s.date===state.compareDate).sort((a,b)=>a.start.localeCompare(b.start));
+
+    $('#conn-compare-me').innerHTML = miniSessionListHtml(mySessions);
+    $('#conn-compare-friend').innerHTML = miniSessionListHtml(friendSessions);
+
+    const holiday = HOLIDAY_MAP[state.compareDate];
+    const freeSlot = $('#conn-compare-free-slot');
+    if(holiday){
+      freeSlot.innerHTML = `<div class="free-together"><div class="ft-title">☀ Free all day</div><div class="ft-windows">${escapeHtml(holiday)} — no classes for anyone.</div></div>`;
+      return;
+    }
+    const windows = freeWindowsForBoth(mySessions, friendSessions);
+    if(windows.length===0){
+      freeSlot.innerHTML = `<div class="free-together none"><div class="ft-title">No shared free time</div><div class="ft-windows">Between you both, this day is fully booked.</div></div>`;
+    } else {
+      const list = windows.map(([s,e])=> `${to12h(minutesToHHMM(s))} – ${to12h(minutesToHHMM(e))}`).join('<br>');
+      freeSlot.innerHTML = `<div class="free-together"><div class="ft-title">✓ Free at the same time</div><div class="ft-windows">${list}</div></div>`;
+    }
   }
 
   /* ---------------- Settings modal ---------------- */
