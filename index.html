@@ -495,7 +495,7 @@
           <div class="gate-error" id="owner-pass-error"></div>
           <button class="btn sm" id="btn-change-passcode" style="margin-top:10px;">Update passcode</button>
         </div>
-        <p class="helper-text">Each access code works once, for whoever enters it first — after that it's marked used and won't work again. There's no payment happening inside this app; collect payment however you normally would, then hand over one unused code per buyer.</p>
+        <p class="helper-text">Each access code works once, for whoever enters it first. "Revoke" on an unused code deletes it outright. "Revoke access" on an in-use code signs that person out — within a minute if they have it open, or the next time they reopen it otherwise. There's no payment happening inside this app; collect payment however you normally would, then hand over one unused code per buyer.</p>
       </div>
 
       <div class="modal-close-row"><button class="btn sm" id="settings-close">Close</button></div>
@@ -662,6 +662,8 @@ const EMBEDDED_DATA = {"courses": {"GSEC": {"code": "GSEC", "name": "Growth Stra
   }
   function normalizeCode(s){ return (s||'').trim().toUpperCase().replace(/\s+/g,''); }
 
+  const REDEEMED_CODE_KEY = 'redeemed_code';
+
   async function getAccessCodes(){
     let raw = null;
     try{ raw = await sharedGet(ACCESS_CODES_KEY); }catch(e){}
@@ -670,11 +672,35 @@ const EMBEDDED_DATA = {"courses": {"GSEC": {"code": "GSEC", "name": "Growth Stra
   }
   async function saveAccessCodes(codes){ await sharedSet(ACCESS_CODES_KEY, JSON.stringify(codes)); }
 
+  // Owner sign-ins aren't tracked by a code, so they're never checked here.
+  // A device that got in via a buyer code is re-checked against Firebase —
+  // if the owner has since revoked that specific code, access is pulled.
+  async function verifyAccessStillValid(){
+    let code = null;
+    try{ code = await storeGet(REDEEMED_CODE_KEY); }catch(e){}
+    if(!code) return true;
+    const codes = await getAccessCodes();
+    const entry = codes[code];
+    if(!entry || entry.revoked){
+      await storeDelete(PASSCODE_VERIFIED_KEY);
+      await storeDelete(REDEEMED_CODE_KEY);
+      await storeDelete('identity');
+      await storeDelete(IS_ADMIN_KEY);
+      return false;
+    }
+    return true;
+  }
+
   function initGate(){
     return new Promise(async (resolve)=>{
       let verified = null;
       try{ verified = await storeGet(PASSCODE_VERIFIED_KEY); }catch(e){}
-      if(verified === 'true'){ setChromeVisible(true); resolve(true); return; }
+      let wasRevoked = false;
+      if(verified === 'true'){
+        const stillValid = await verifyAccessStillValid();
+        if(stillValid){ setChromeVisible(true); resolve(true); return; }
+        wasRevoked = true; // fall through to the gate below, now asking for a fresh code
+      }
 
       let ownerHash = null;
       try{ ownerHash = await sharedGet(OWNER_PASSCODE_KEY); }catch(e){}
@@ -688,6 +714,10 @@ const EMBEDDED_DATA = {"courses": {"GSEC": {"code": "GSEC", "name": "Growth Stra
         $('#gate-title').textContent = "Set the owner passcode";
         $('#gate-lead').textContent = "You're the first to open this planner, which makes you the owner. Choose a passcode for yourself — you'll use it to sign in and to generate access codes for everyone else.";
         $('#gate-helper').textContent = "This isn't bank-grade security — it deters casual access, it doesn't guarantee it. Keep this passcode to yourself.";
+      } else if(wasRevoked){
+        $('#gate-title').textContent = "Access no longer valid";
+        $('#gate-lead').textContent = "Your access code was revoked, or is no longer valid. Enter a new code, or your owner passcode if you're the owner.";
+        $('#gate-helper').textContent = "";
       } else {
         $('#gate-title').textContent = "Enter your access code";
         $('#gate-lead').textContent = "Enter the code you were given. If you're the owner, enter your owner passcode instead.";
@@ -727,7 +757,7 @@ const EMBEDDED_DATA = {"courses": {"GSEC": {"code": "GSEC", "name": "Growth Stra
         const norm = normalizeCode(val);
         const codes = await getAccessCodes();
         const entry = codes[norm];
-        if(!entry){
+        if(!entry || entry.revoked){
           $('#gate-error').textContent = "That code isn't valid.";
           $('#gate-input').value = ''; $('#gate-input').focus();
           return;
@@ -742,6 +772,7 @@ const EMBEDDED_DATA = {"courses": {"GSEC": {"code": "GSEC", "name": "Growth Stra
         codes[norm] = entry;
         await saveAccessCodes(codes);
         await storeSet(PASSCODE_VERIFIED_KEY, 'true');
+        await storeSet(REDEEMED_CODE_KEY, norm);
         screen.style.display = 'none';
         setChromeVisible(true);
         resolve(true);
@@ -974,9 +1005,18 @@ const EMBEDDED_DATA = {"courses": {"GSEC": {"code": "GSEC", "name": "Growth Stra
   }
 
   function startSyncLoop(){
-    setInterval(()=>{ syncSchedule(); }, SYNC_POLL_MS);
+    async function tick(){
+      const stillValid = await verifyAccessStillValid();
+      if(!stillValid){
+        // Access was revoked mid-session — send this device back to the gate.
+        location.reload();
+        return;
+      }
+      syncSchedule();
+    }
+    setInterval(tick, SYNC_POLL_MS);
     document.addEventListener('visibilitychange', ()=>{
-      if(document.visibilityState === 'visible') syncSchedule();
+      if(document.visibilityState === 'visible') tick();
     });
   }
 
@@ -1571,21 +1611,35 @@ const EMBEDDED_DATA = {"courses": {"GSEC": {"code": "GSEC", "name": "Growth Stra
   async function renderCodesPanel(){
     const codes = await getAccessCodes();
     const entries = Object.entries(codes);
-    const unredeemed = entries.filter(([,v])=>!v.redeemed);
-    const redeemed = entries.filter(([,v])=>v.redeemed);
-    $('#codes-summary').textContent = `${entries.length} generated · ${redeemed.length} used · ${unredeemed.length} available`;
+    const available = entries.filter(([,v])=>!v.redeemed && !v.revoked);
+    const inUse = entries.filter(([,v])=>v.redeemed && !v.revoked);
+    const revoked = entries.filter(([,v])=>v.revoked);
+    $('#codes-summary').textContent = `${entries.length} generated · ${inUse.length} in use · ${available.length} available · ${revoked.length} revoked`;
 
     const list = $('#codes-list');
-    if(unredeemed.length === 0){
-      list.innerHTML = '';
-      return;
+    let html = '';
+    if(available.length){
+      html += `<div class="helper-text" style="margin:10px 0 4px;">Available</div>`;
+      html += available.map(([code])=>`
+        <div class="attn-session-row">
+          <input readonly value="${code}" class="code-field" data-code="${code}"
+            style="font-family:ui-monospace,monospace; font-size:14px; font-weight:700; letter-spacing:0.5px; background:transparent; border:none; color:var(--text); width:110px; padding:0;">
+          <div class="mark-toggle">
+            <button class="btn sm" data-copy="${code}">Copy</button>
+            <button class="btn sm danger-outline" data-revoke="${code}">Revoke</button>
+          </div>
+        </div>`).join('');
     }
-    list.innerHTML = unredeemed.map(([code])=>`
-      <div class="attn-session-row">
-        <input readonly value="${code}" class="code-field" data-code="${code}"
-          style="font-family:ui-monospace,monospace; font-size:14px; font-weight:700; letter-spacing:0.5px; background:transparent; border:none; color:var(--text); width:110px; padding:0;">
-        <button class="btn sm" data-copy="${code}">Copy</button>
-      </div>`).join('');
+    if(inUse.length){
+      html += `<div class="helper-text" style="margin:14px 0 4px;">In use</div>`;
+      html += inUse.map(([code])=>`
+        <div class="attn-session-row">
+          <span style="font-family:ui-monospace,monospace; font-size:14px; font-weight:700; letter-spacing:0.5px; color:var(--muted);">${code}</span>
+          <button class="btn sm danger-outline" data-revoke="${code}">Revoke access</button>
+        </div>`).join('');
+    }
+    list.innerHTML = html;
+
     $$('.code-field', list).forEach(inp=>{
       inp.addEventListener('click', ()=> inp.select());
       inp.addEventListener('focus', ()=> inp.select());
@@ -1611,6 +1665,28 @@ const EMBEDDED_DATA = {"courses": {"GSEC": {"code": "GSEC", "name": "Growth Stra
           btn.textContent = 'Selected';
           setTimeout(()=>{ btn.textContent = 'Copy'; }, 1500);
         }
+      });
+    });
+    $$('button[data-revoke]', list).forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        const code = btn.dataset.revoke;
+        const latest = await getAccessCodes();
+        const entry = latest[code];
+        if(!entry) { await renderCodesPanel(); return; }
+        if(entry.redeemed){
+          // Already handed out and used — flag it so that device gets signed
+          // out next time it checks in (on its next load, or within a minute
+          // if it's currently open).
+          entry.revoked = true;
+          entry.revokedAt = Date.now();
+          latest[code] = entry;
+        } else {
+          // Never used — just remove it outright, it can't be redeemed again.
+          delete latest[code];
+        }
+        await saveAccessCodes(latest);
+        await renderCodesPanel();
+        showToast(`${code} revoked.`);
       });
     });
   }
