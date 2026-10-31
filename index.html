@@ -2858,16 +2858,29 @@ const EMBEDDED_MESS_MENU = {"month": "September 2026", "days": {"Monday": {"Brea
     if(o === 'approved' || o === 'denied') return o;
     return (cfg && cfg.bulk && cfg.bulk.approved) ? 'approved' : 'pending';
   }
+  // The break starts on the day the calendar labels as Diwali and runs for as
+  // long as nobody has a class. Going by the schedule itself (rather than how
+  // each following day happens to be labelled) means it works the same whether
+  // the data came from the built-in copy or the live Google Sheet.
   function detectBreak(){
     const dates = DATA.holidays.filter(h => /diwali/i.test(h.label || '')).map(h => h.date).sort();
     if(!dates.length) return {start:'', end:''};
     const start = dates[0];
+    const hasClass = new Set(DATA.sessions.map(s => s.date));
     let end = start;
-    // The break continues through consecutive unlabelled holiday dates.
     while(true){
       const next = addDays(end, 1);
-      const h = DATA.holidays.find(x => x.date === next);
-      if(h && (!h.label || /diwali/i.test(h.label))) end = next; else break;
+      if(next > TERM_END || hasClass.has(next)) break;
+      end = next;
+    }
+    // Don't let a trailing Sunday or a separate named holiday right after the
+    // break inflate it — those aren't part of the break itself.
+    while(end > start){
+      const h = DATA.holidays.find(x => x.date === end);
+      const label = (h && h.label) || '';
+      const isSunday = parseDate(end).getDay() === 0 || /sunday/i.test(label);
+      const isOtherNamed = label && label !== 'Holiday' && !/diwali|break/i.test(label);
+      if(isSunday || isOtherNamed) end = addDays(end, -1); else break;
     }
     return {start, end};
   }
