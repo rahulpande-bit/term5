@@ -336,8 +336,18 @@
     width:100%; max-width:480px;
     display:flex; background:rgba(19,21,24,0.92); backdrop-filter:blur(12px);
     border-top:1px solid var(--border); padding:8px 6px calc(8px + env(safe-area-inset-bottom));
-    z-index:50;
+    z-index:50; transition:bottom .15s;
   }
+  .support-strip{
+    position:fixed; bottom:0; left:50%; transform:translateX(-50%);
+    width:100%; max-width:480px;
+    background:var(--accent-soft); border-top:1px solid rgba(247,186,64,0.3);
+    padding:9px 16px calc(9px + env(safe-area-inset-bottom));
+    text-align:center; font-size:12px; color:var(--muted);
+    z-index:49;
+  }
+  .support-strip a{ color:var(--accent); font-weight:700; text-decoration:none; }
+  .support-strip a:hover{ text-decoration:underline; }
   .navbtn{
     flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; padding:6px 2px;
     color:var(--muted-2); cursor:pointer; border-radius:10px; transition:color .15s;
@@ -350,6 +360,7 @@
   .support-fab-wrap{
     position:fixed; left:50%; bottom:0; transform:translateX(-50%);
     width:100%; max-width:480px; height:0; z-index:60; pointer-events:none;
+    transition:bottom .15s;
   }
   .support-fab{
     position:absolute; right:18px; bottom:calc(82px + env(safe-area-inset-bottom));
@@ -412,6 +423,54 @@
 
   ::-webkit-scrollbar{width:6px; height:6px;}
   ::-webkit-scrollbar-thumb{background:var(--surface-3); border-radius:3px;}
+
+  /* ---------- Admin dashboard ---------- */
+  .adm-back{color:var(--accent); font-size:13px; font-weight:600; cursor:pointer; display:inline-block; margin-bottom:14px;}
+  .adm-course{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-m); overflow:hidden;}
+  .adm-course + .adm-course{margin-top:8px;}
+  .adm-course.sel{border-color:var(--accent); box-shadow:0 0 0 1px var(--accent-soft-2) inset;}
+  .adm-chead{display:flex; align-items:center; gap:10px; padding:13px 14px; cursor:pointer;}
+  .adm-cmain{flex:1; min-width:0;}
+  .adm-cname{font-size:14.5px; font-weight:600; overflow-wrap:anywhere;}
+  .adm-cmeta{font-size:12px; color:var(--muted); margin-top:2px;}
+  .adm-selbtn{flex:0 0 auto; padding:6px 11px; border-radius:999px; font-size:12px; font-weight:700; cursor:pointer;
+    background:var(--surface-3); color:var(--muted); border:1px solid var(--border-2);}
+  .adm-selbtn.on{background:var(--accent); color:#1A1204; border-color:var(--accent);}
+  .adm-chev{flex:0 0 auto; color:var(--muted-2); font-size:13px; transition:transform .15s;}
+  .adm-course.open .adm-chev{transform:rotate(180deg);}
+  .adm-cbody{display:none; border-top:1px solid var(--border); padding:10px 14px 12px;}
+  .adm-course.open .adm-cbody{display:block;}
+  .adm-secbar{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px;}
+  .adm-chip{padding:5px 11px; border-radius:999px; font-size:12px; font-weight:600; cursor:pointer;
+    background:var(--surface-2); color:var(--muted); border:1px solid var(--border);}
+  .adm-chip.active{background:var(--accent-soft); color:var(--accent); border-color:var(--accent-soft-2);}
+  .adm-srow{display:flex; align-items:center; gap:10px; padding:7px 0; border-bottom:1px solid var(--border);}
+  .adm-srow:last-child{border-bottom:none;}
+  .adm-sname{flex:1; min-width:0; font-size:13.5px; overflow-wrap:anywhere;}
+  .adm-sroll{font-size:11.5px; color:var(--muted-2); white-space:nowrap;}
+  .adm-seg{display:grid; grid-template-columns:repeat(2,1fr); gap:6px; margin:12px 0;}
+  .adm-seg .adm-chip{text-align:center; padding:8px 6px;}
+  .adm-tags{display:flex; gap:6px; flex-wrap:wrap; align-items:center;}
+  .adm-tag{font-size:12px; font-weight:700; padding:4px 10px; border-radius:999px; background:var(--accent-soft); color:var(--accent);}
+  .adm-actions{display:flex; gap:8px; flex-wrap:wrap; margin-top:12px;}
+  .adm-grp{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-m); overflow:hidden;}
+  .adm-grp + .adm-grp{margin-top:8px;}
+  .adm-grp-head{padding:13px 14px; cursor:pointer;}
+  .adm-grp-title{font-size:14px; font-weight:600;}
+  .adm-grp-sub{font-size:12px; color:var(--muted); margin-top:3px; line-height:1.45;}
+  .adm-grp-body{display:none; border-top:1px solid var(--border); padding:8px 14px 12px;}
+  .adm-grp.open .adm-grp-body{display:block;}
+  .adm-lv{flex:0 0 auto; padding:5px 10px; border-radius:999px; font-size:11.5px; font-weight:700; cursor:pointer;
+    border:1px solid var(--border-2); background:var(--surface-3); color:var(--muted);}
+  .adm-lv.approved{background:var(--good-soft); color:var(--good); border-color:rgba(52,199,123,0.35);}
+  .adm-lv.denied{background:var(--bad-soft); color:var(--bad); border-color:rgba(240,85,77,0.35);}
+  .adm-field{display:block; font-size:12px; color:var(--muted); margin:10px 0 4px; font-weight:600;}
+  .adm-leave{border-radius:var(--radius-m); padding:14px; margin-bottom:14px; border:1px solid var(--border); background:var(--surface);}
+  .adm-leave.approved{border-color:rgba(52,199,123,0.4); background:var(--good-soft);}
+  .adm-leave.denied{border-color:rgba(240,85,77,0.4); background:var(--bad-soft);}
+  .adm-leave-title{font-size:13px; font-weight:700;}
+  .adm-leave-dates{font-size:17px; font-weight:700; margin:8px 0 4px;}
+  .adm-leave-sub{font-size:12.5px; color:var(--muted); line-height:1.5;}
 </style>
 </head>
 <body>
@@ -466,6 +525,7 @@
       <h1 class="page-title" id="dash-greeting">Hi there</h1>
 
       <div id="dash-holiday-slot"></div>
+      <div id="dash-leave-slot"></div>
 
       <div class="stats-row" id="dash-stats"></div>
 
@@ -511,6 +571,26 @@
           <div id="attn-course-list"></div>
         </div>
       </div>
+    </section>
+
+    <!-- ============ ADMIN DASHBOARD ============ -->
+    <section class="view" id="view-admin">
+      <a class="adm-back" id="adm-back" style="display:none;">‹ Back to my planner</a>
+      <div class="eyebrow" id="adm-eyebrow">ADMIN</div>
+      <h1 class="page-title" style="margin-bottom:14px;">Admin dashboard</h1>
+      <div class="pill-group" id="adm-tabs" style="margin-bottom:16px;">
+        <div class="pill active" data-tab="rosters">Course rosters</div>
+        <div class="pill" data-tab="diwali">Diwali break</div>
+      </div>
+
+      <div id="adm-pane-rosters">
+        <div class="card" id="adm-result" style="margin-bottom:14px;"></div>
+        <h2 class="section-title">All subjects</h2>
+        <p class="helper-text" style="margin:-6px 0 10px;">Tap a subject to see who's in it. Tap <b>Select</b> on any two to see everyone across both, or only the students they have in common.</p>
+        <div id="adm-courses"></div>
+      </div>
+
+      <div id="adm-pane-diwali" style="display:none;"></div>
     </section>
 
     <!-- ============ CONNECTIONS ============ -->
@@ -575,6 +655,12 @@
     </div>
   </nav>
 
+  <!-- Persistent support strip, under the nav — hidden for the owner and
+       for supporters, shown for everyone else. -->
+  <div class="support-strip" id="support-strip" style="display:none;">
+    <span>Trouble signing in? For better bandwidth, become a supporter @ ₹29/term. </span><a href="https://docs.google.com/forms/d/e/1FAIpQLSfCQHD8hSqjjgn9rh0dRdKrKHUhGsSjOdDR1wt7st4XYhQqKg/viewform?usp=publish-editor" target="_blank" rel="noopener">Click here to support</a>
+  </div>
+
   <!-- Mandatory password setup for accounts that predate the password
        system — no close button, on purpose, it isn't skippable. -->
   <div class="modal-backdrop" id="modal-password-setup">
@@ -604,7 +690,7 @@
         </div>
       </div>
 
-      <div class="stack">
+      <div class="stack" id="settings-student-actions">
         <button class="btn block danger-outline" id="btn-clear-attendance">Clear my attendance marks</button>
         <button class="btn block danger-outline" id="btn-clear-friends">Clear my friends list</button>
       </div>
@@ -623,8 +709,13 @@
       <div id="settings-admin-section" style="display:none; margin-top:18px;">
         <h2 class="section-title">Owner tools</h2>
         <div class="card" style="margin-bottom:10px;">
+          <div style="font-size:13px; font-weight:600; margin-bottom:2px;">Admin dashboard</div>
+          <div class="helper-text" style="margin-bottom:12px;">Course rosters (pick any two subjects to see everyone across both, or just the students they share) and the Diwali break leave tool. Only visible here — students never see this.</div>
+          <button class="btn primary sm" id="btn-open-admin">Open admin dashboard</button>
+        </div>
+        <div class="card" style="margin-bottom:10px;">
           <div style="font-size:13px; font-weight:600; margin-bottom:2px;">Manage users</div>
-          <div class="helper-text" style="margin-bottom:12px;">Block or unblock anyone who's signed up. A blocked account can't sign in, and gets signed out — with a clear message — within about a minute if they're already using it.</div>
+          <div class="helper-text" style="margin-bottom:12px;">Block or unblock anyone who's signed up — a blocked account can't sign in, and gets signed out (with a clear message) within about a minute if they're already using it. Supporters don't see the "support this app" strip that regular users get; mark someone a supporter once they've paid.</div>
           <input type="text" id="manage-user-search" placeholder="Search by name or email" autocomplete="off">
           <div id="manage-user-list" style="margin-top:12px;"></div>
         </div>
@@ -650,6 +741,17 @@
           <button class="btn sm" id="btn-fix-identity" style="margin-top:10px;">Clear their identity</button>
         </div>
         <div class="card" style="margin-bottom:10px;">
+          <div style="font-size:13px; font-weight:600; margin-bottom:2px;">College admin access</div>
+          <div class="helper-text" style="margin-bottom:12px;">Gives the college administration their own passcode. They type it into the password box on the sign-in screen (any email) and land on the admin dashboard — course rosters and the Diwali leave tool only. It does not unlock these owner tools, user management, or anyone's attendance. Changing the passcode signs existing admin sessions out within about a minute; removing it ends their access.</div>
+          <div class="helper-text" id="college-admin-status" style="margin:0 0 10px;">—</div>
+          <input type="password" id="college-admin-pass" placeholder="New college admin passcode" autocomplete="off">
+          <div class="gate-error" id="college-admin-error"></div>
+          <div class="adm-actions" style="margin-top:6px;">
+            <button class="btn sm" id="btn-set-college-admin">Set / replace passcode</button>
+            <button class="btn sm danger-outline" id="btn-remove-college-admin">Remove access</button>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:10px;">
           <div style="font-size:13px; font-weight:600; margin-bottom:8px;">Owner passcode</div>
           <input type="password" id="new-owner-pass" placeholder="New owner passcode" autocomplete="off">
           <div class="gate-error" id="owner-pass-error"></div>
@@ -658,7 +760,7 @@
         <p class="helper-text">Everyone signs in with their own email and a password they set themselves — no codes to hand out anymore, and no limit on how many devices one account can be used from. One student can only ever be linked to one email; the app won't let a second account claim a name that's already taken. Note: email here isn't verified (no confirmation link) — it's a real login, just not one this app can confirm you actually own that inbox.</p>
       </div>
 
-      <p class="helper-text" style="margin-top:16px;">This planner only uses schedule and roster information the college already shared with the batch (like the course nominal-list email) — nothing was accessed that wasn't already available to students. No private or restricted data has been used.</p>
+      <p class="helper-text" style="margin-top:16px;">This planner only uses schedule and roster information the college already shared with the batch (like the course nominal-list email) — nothing was accessed that wasn't already available to students. No private or restricted data has been used. If the college administration has been given access, it covers course rosters and the Diwali break leave status only — never anyone's attendance marks or account details.</p>
 
       <div class="modal-close-row"><button class="btn sm" id="settings-close">Close</button></div>
     </div>
@@ -792,6 +894,14 @@ const EMBEDDED_MESS_MENU = {"month": "September 2026", "days": {"Monday": {"Brea
       return Object.prototype.hasOwnProperty.call(sharedMemCache, key) ? sharedMemCache[key] : null;
     }
   }
+  async function sharedGetStrict(key){
+    try{
+      const res = await fetch(firebasePath(key), {cache:'no-store'});
+      if(!res.ok) return {ok:false, value:null};
+      const value = await res.json();
+      return {ok:true, value: value == null ? null : value};
+    }catch(e){ return {ok:false, value:null}; }
+  }
   async function sharedSet(key, value){
     sharedMemCache[key] = value;
     try{
@@ -807,13 +917,13 @@ const EMBEDDED_MESS_MENU = {"month": "September 2026", "days": {"Monday": {"Brea
     try{ await fetch(firebasePath(key), {method: 'DELETE'}); }catch(e){}
   }
 
-  function showToast(msg){
+  function showToast(msg, duration){
     const el = document.getElementById('toast');
     if(!el) return;
     el.textContent = msg;
     el.classList.add('show');
     clearTimeout(el._t);
-    el._t = setTimeout(()=> el.classList.remove('show'), 3400);
+    el._t = setTimeout(()=> el.classList.remove('show'), duration || 3400);
   }
 
   /* ---------------- Access gate: owner passcode + user accounts ---------------- */
@@ -830,6 +940,12 @@ const EMBEDDED_MESS_MENU = {"month": "September 2026", "days": {"Monday": {"Brea
   const OWNER_PASSCODE_KEY = 'access_passcode';
   const PASSCODE_VERIFIED_KEY = 'passcode_verified';
   const IS_ADMIN_KEY = 'is_admin';
+  // College administration gets a separate, narrower credential: it opens the
+  // admin dashboard (rosters + Diwali leave) and nothing else.
+  const COLLEGE_ADMIN_PASS_KEY = 'college_admin_passcode';
+  const COLLEGE_ADMIN_FLAG = 'is_college_admin';
+  const COLLEGE_ADMIN_STAMP = 'college_admin_stamp';
+  const COLLEGE_ADMIN_EMAIL = 'college_admin_email';
 
   async function sha256Hex(text){
     const bytes = new TextEncoder().encode(text);
@@ -841,9 +957,13 @@ const EMBEDDED_MESS_MENU = {"month": "September 2026", "days": {"Monday": {"Brea
     const nav = document.querySelector('nav.bottomnav');
     const header = document.querySelector('header.topbar');
     const fab = document.querySelector('.support-fab-wrap');
+    const strip = document.getElementById('support-strip');
     if(nav) nav.style.display = visible ? '' : 'none';
     if(header) header.style.display = visible ? '' : 'none';
     if(fab) fab.style.display = visible ? '' : 'none';
+    // Left hidden here regardless — updateSupportStrip() decides whether to
+    // actually show it, once it's known whether this person qualifies.
+    if(strip) strip.style.display = 'none';
   }
 
   /* ---------------- Accounts (email + password) ---------------- */
@@ -942,6 +1062,20 @@ const EMBEDDED_MESS_MENU = {"month": "September 2026", "days": {"Monday": {"Brea
     try{ isAdmin = await storeGet(IS_ADMIN_KEY); }catch(e){}
     if(isAdmin === 'true') return true; // owner sessions are never blocked this way
 
+    let collegeFlag = null;
+    try{ collegeFlag = await storeGet(COLLEGE_ADMIN_FLAG); }catch(e){}
+    if(collegeFlag === 'true'){
+      let stamp = null;
+      try{ stamp = await storeGet(COLLEGE_ADMIN_STAMP); }catch(e){}
+      const cur = await sharedGetStrict(COLLEGE_ADMIN_PASS_KEY);
+      if(!cur.ok) return true; // can't tell right now — don't kick anyone out over a flaky connection
+      if(cur.value && stamp && String(cur.value).slice(0,16) === stamp) return true;
+      await storeDelete(PASSCODE_VERIFIED_KEY);
+      await storeDelete(COLLEGE_ADMIN_FLAG);
+      await storeDelete(COLLEGE_ADMIN_STAMP);
+      return false;
+    }
+
     let email = null;
     try{ email = await storeGet('email'); }catch(e){}
     if(!email) return false;
@@ -1001,7 +1135,7 @@ const EMBEDDED_MESS_MENU = {"month": "September 2026", "days": {"Monday": {"Brea
         modeToggle.style.display = '';
         $('#gate-title').textContent = uiMode==='signin' ? "Sign in" : "Create your account";
         $('#gate-lead').textContent = uiMode==='signin'
-          ? "Enter your email and password. Owner? Your passcode works here too."
+          ? "Enter your email and password. Owner or college admin? Your passcode works here too."
           : "Pick your email and a password — this becomes your login on any device from now on.";
         pwField.placeholder = uiMode==='signin' ? 'Password' : 'Choose a password';
         confirmField.placeholder = 'Confirm password';
@@ -1040,6 +1174,7 @@ const EMBEDDED_MESS_MENU = {"month": "September 2026", "days": {"Monday": {"Brea
           await sharedSet(OWNER_PASSCODE_KEY, hash);
           await storeSet(PASSCODE_VERIFIED_KEY, 'true');
           await storeSet(IS_ADMIN_KEY, 'true');
+          await storeDelete(COLLEGE_ADMIN_FLAG);
           await storeSet('email', email);
           screen.style.display = 'none';
           setChromeVisible(true);
@@ -1053,7 +1188,25 @@ const EMBEDDED_MESS_MENU = {"month": "September 2026", "days": {"Monday": {"Brea
         if(hash === ownerHash){
           await storeSet(PASSCODE_VERIFIED_KEY, 'true');
           await storeSet(IS_ADMIN_KEY, 'true');
+          await storeDelete(COLLEGE_ADMIN_FLAG);
           await storeSet('email', email);
+          screen.style.display = 'none';
+          setChromeVisible(true);
+          resolve(true);
+          return;
+        }
+
+        // College administration: their own passcode, in the same password box.
+        // Admin sessions carry no student account, so nothing else is stored.
+        const collegeHash = await sharedGet(COLLEGE_ADMIN_PASS_KEY);
+        if(collegeHash && hash === collegeHash){
+          await storeSet(PASSCODE_VERIFIED_KEY, 'true');
+          await storeSet(COLLEGE_ADMIN_FLAG, 'true');
+          await storeSet(COLLEGE_ADMIN_STAMP, String(collegeHash).slice(0,16));
+          await storeSet(COLLEGE_ADMIN_EMAIL, email);
+          await storeDelete(IS_ADMIN_KEY);
+          await storeDelete('email');
+          await storeDelete('identity');
           screen.style.display = 'none';
           setChromeVisible(true);
           resolve(true);
@@ -1088,6 +1241,7 @@ const EMBEDDED_MESS_MENU = {"month": "September 2026", "days": {"Monday": {"Brea
           }
           await storeSet(PASSCODE_VERIFIED_KEY, 'true');
           await storeDelete(IS_ADMIN_KEY);
+          await storeDelete(COLLEGE_ADMIN_FLAG);
           await storeSet('email', email);
           screen.style.display = 'none';
           setChromeVisible(true);
@@ -1106,6 +1260,7 @@ const EMBEDDED_MESS_MENU = {"month": "September 2026", "days": {"Monday": {"Brea
         await saveAccount(email, { passwordHash: hash, blocked:false, createdAt: Date.now() });
         await storeSet(PASSCODE_VERIFIED_KEY, 'true');
         await storeDelete(IS_ADMIN_KEY);
+        await storeDelete(COLLEGE_ADMIN_FLAG);
         await storeSet('email', email);
         screen.style.display = 'none';
         setChromeVisible(true);
@@ -1357,6 +1512,11 @@ const EMBEDDED_MESS_MENU = {"month": "September 2026", "days": {"Monday": {"Brea
         location.reload();
         return;
       }
+      if(state.email && !state.isAdmin){
+        const account = await fetchAccount(state.email);
+        state.isSupporter = !!(account && account.supporter);
+        updateSupportStrip();
+      }
       if(state.email){
         const personalChanged = await pullSyncedUserData();
         if(personalChanged){
@@ -1366,6 +1526,9 @@ const EMBEDDED_MESS_MENU = {"month": "September 2026", "days": {"Monday": {"Brea
       }
       syncSchedule();
       syncMessMenu();
+      refreshDiwaliThen(()=>{
+        if(state.currentView==='dashboard') renderLeaveCard();
+      });
     }
     setInterval(tick, SYNC_POLL_MS);
     document.addEventListener('visibilitychange', ()=>{
@@ -1460,6 +1623,9 @@ const EMBEDDED_MESS_MENU = {"month": "September 2026", "days": {"Monday": {"Brea
     friends: [],        // array of roll numbers
     attendance: {},     // sessionKey -> 'present' | 'absent'
     email: null,        // the email this device signed in with — the key personal data syncs under
+    isCollegeAdmin: false, // college administration — dashboard-only access
+    isAdmin: false,      // the owner, via passcode — never shown the support strip
+    isSupporter: false,  // a paying "supporter" — also never shown the nudge strip
     ttDate: todayStr() < TERM_START ? TERM_START : (todayStr() > TERM_END ? TERM_END : todayStr()),
     currentView: 'onboard',
     compareRolls: [],   // friend roll numbers currently selected for comparison, in Connections
@@ -1473,7 +1639,12 @@ const EMBEDDED_MESS_MENU = {"month": "September 2026", "days": {"Monday": {"Brea
 
   /* ---------------- View switching ---------------- */
   function showView(name){
+    // The admin dashboard is only for the owner or the college admin.
+    if(name === 'admin' && !(state.isAdmin || state.isCollegeAdmin)) name = state.me ? 'dashboard' : 'onboard';
     state.currentView = name;
+    // the floating mess-menu button would sit on top of the roster's Select buttons
+    const fabWrap = document.querySelector('.support-fab-wrap');
+    if(fabWrap) fabWrap.style.visibility = name === 'admin' ? 'hidden' : '';
     $$('.view').forEach(v=>v.classList.remove('active'));
     const el = document.getElementById('view-'+name);
     if(el) el.classList.add('active');
@@ -1482,6 +1653,7 @@ const EMBEDDED_MESS_MENU = {"month": "September 2026", "days": {"Monday": {"Brea
     if(name==='timetable') renderTimetable();
     if(name==='attendance') renderAttendance();
     if(name==='connections') renderConnections();
+    if(name==='admin') renderAdmin();
     $('#main').scrollTop = 0;
   }
 
@@ -1525,6 +1697,7 @@ const EMBEDDED_MESS_MENU = {"month": "September 2026", "days": {"Monday": {"Brea
         state.viewing = roll;
         await storeSet('identity', roll);
         await pushSyncedUserData();
+        updateSupportStrip();
         showView('dashboard');
       });
     });
@@ -1587,6 +1760,8 @@ const EMBEDDED_MESS_MENU = {"month": "September 2026", "days": {"Monday": {"Brea
       list.innerHTML = todaysSessions.map(sess => sessionCardHtml(sess, courseSessionCounts)).join('');
     }
 
+    renderLeaveCard();
+    refreshDiwaliThen(renderLeaveCard);
     renderFriendsWidget();
   }
 
@@ -2091,14 +2266,15 @@ const EMBEDDED_MESS_MENU = {"month": "September 2026", "days": {"Monday": {"Brea
   /* ---------------- Settings modal ---------------- */
   $('#btn-settings').addEventListener('click', async ()=>{
     const s = DATA.students[state.me];
-    $('#settings-current').textContent = s ? `Signed in as ${s.name} (${state.me}).` : '';
+    $('#settings-current').textContent = s ? `Signed in as ${s.name} (${state.me}).` : (state.isCollegeAdmin ? 'Signed in as college administration.' : '');
+    $('#settings-student-actions').style.display = state.isCollegeAdmin && !s ? 'none' : '';
     $('#settings-sync-status').textContent = `Last synced ${formatSyncedAt()}`;
 
     let isAdmin = null;
     try{ isAdmin = await storeGet(IS_ADMIN_KEY); }catch(e){}
     $('#settings-admin-section').style.display = isAdmin === 'true' ? 'block' : 'none';
-    $('#settings-claim-owner').style.display = isAdmin === 'true' ? 'none' : 'block';
-    if(isAdmin === 'true'){ $('#manage-user-search').value = ''; await renderUsersPanel(); }
+    $('#settings-claim-owner').style.display = (isAdmin === 'true' || state.isCollegeAdmin) ? 'none' : 'block';
+    if(isAdmin === 'true'){ $('#manage-user-search').value = ''; await renderUsersPanel(); await renderCollegeAdminStatus(); }
 
     $('#modal-settings').classList.add('active');
   });
@@ -2113,6 +2289,9 @@ const EMBEDDED_MESS_MENU = {"month": "September 2026", "days": {"Monday": {"Brea
     const hash = await sha256Hex(val.trim());
     if(hash !== ownerHash){ errEl.textContent = 'That passcode is incorrect.'; $('#claim-owner-input').value=''; return; }
     await storeSet(IS_ADMIN_KEY, 'true');
+    state.isAdmin = true;
+    updateSupportStrip();
+    await renderCollegeAdminStatus();
     $('#claim-owner-input').value = '';
     $('#settings-claim-owner').style.display = 'none';
     $('#settings-admin-section').style.display = 'block';
@@ -2186,15 +2365,15 @@ const EMBEDDED_MESS_MENU = {"month": "September 2026", "days": {"Monday": {"Brea
       list.innerHTML = `<div class="helper-text">No one has signed up yet.</div>`;
       return;
     }
-    // Look up each person's blocked status in parallel — much faster than
-    // one request at a time once there are a lot of them.
+    // Look up each person's status in parallel — much faster than one
+    // request at a time once there are a lot of them.
     const rows = await Promise.all(rolls.map(async roll=>{
       const email = index[roll];
       const student = DATA.students[roll];
       const name = student ? student.name : roll;
-      let blocked = false;
-      try{ const account = await fetchAccount(email); blocked = !!(account && account.blocked); }catch(e){}
-      return { roll, email, name, blocked };
+      let blocked = false, supporter = false;
+      try{ const account = await fetchAccount(email); blocked = !!(account && account.blocked); supporter = !!(account && account.supporter); }catch(e){}
+      return { roll, email, name, blocked, supporter };
     }));
     rows.sort((a,b)=> a.name.localeCompare(b.name));
 
@@ -2211,10 +2390,13 @@ const EMBEDDED_MESS_MENU = {"month": "September 2026", "days": {"Monday": {"Brea
     list.innerHTML = filtered.map(r=>`
       <div class="attn-session-row">
         <div class="sinfo">
-          <div class="sdate">${escapeHtml(r.name)}${r.blocked ? ' <span style="color:var(--bad); font-weight:700;">· Blocked</span>' : ''}</div>
+          <div class="sdate">${escapeHtml(r.name)}${r.supporter ? ' <span style="color:var(--accent); font-weight:700;">· Supporter</span>' : ''}${r.blocked ? ' <span style="color:var(--bad); font-weight:700;">· Blocked</span>' : ''}</div>
           <div class="stime">${r.roll} · ${escapeHtml(r.email)}</div>
         </div>
-        <button class="btn sm ${r.blocked ? '' : 'danger-outline'}" data-email="${escapeHtml(r.email)}" data-action="${r.blocked ? 'unblock' : 'block'}">${r.blocked ? 'Unblock' : 'Block'}</button>
+        <div class="mark-toggle">
+          <button class="btn sm" data-email="${escapeHtml(r.email)}" data-tier-action="${r.supporter ? 'demote' : 'promote'}">${r.supporter ? 'Make regular' : 'Make supporter'}</button>
+          <button class="btn sm ${r.blocked ? '' : 'danger-outline'}" data-email="${escapeHtml(r.email)}" data-action="${r.blocked ? 'unblock' : 'block'}">${r.blocked ? 'Unblock' : 'Block'}</button>
+        </div>
       </div>
     `).join('');
 
@@ -2230,6 +2412,18 @@ const EMBEDDED_MESS_MENU = {"month": "September 2026", "days": {"Monday": {"Brea
         showToast(action === 'block'
           ? `${email} is now blocked — signed out within about a minute if they're online now, or turned away next time they try to sign in.`
           : `${email} unblocked.`);
+        await renderUsersPanel($('#manage-user-search').value);
+      });
+    });
+    $$('button[data-tier-action]', list).forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        const email = btn.dataset.email;
+        const action = btn.dataset.tierAction;
+        const account = await fetchAccount(email);
+        if(!account){ showToast("No account found — they may not have set a password yet."); return; }
+        account.supporter = (action === 'promote');
+        await saveAccount(email, account);
+        showToast(action === 'promote' ? `${email} is now a supporter.` : `${email} moved back to regular.`);
         await renderUsersPanel($('#manage-user-search').value);
       });
     });
@@ -2542,6 +2736,594 @@ const EMBEDDED_MESS_MENU = {"month": "September 2026", "days": {"Monday": {"Brea
   // background sync tick rather than adding a whole new timer.
   setInterval(()=>{ if($('#modal-mess').classList.contains('active')) updateMessStatusBadge(); }, 60000);
 
+  /* ---------------- College admin dashboard ---------------- */
+  const DIWALI_KEY = 'diwali_leave';
+  let diwaliCfg = null;      // latest shared config: {breakStart, breakEnd, note, bulk, overrides, updatedAt}
+  let diwaliFetchedAt = 0;
+
+  const adm = {
+    tab: 'rosters',
+    open: {},                // course code -> expanded?
+    scope: {},               // course code -> 'ALL' | section letter
+    sel: [],                 // up to two selected course codes
+    mode: 'union',           // union | both | onlyA | onlyB
+    groupOpen: {},
+    query: '',
+  };
+
+  function isAnyAdmin(){ return !!(state.isAdmin || state.isCollegeAdmin); }
+
+  // The college admin has no student identity, so the planner's bottom nav and
+  // floating buttons don't apply to them — they just get the dashboard.
+  function applyRoleChrome(){
+    if(state.isCollegeAdmin && !state.me){
+      const nav = document.querySelector('nav.bottomnav');
+      const fab = document.querySelector('.support-fab-wrap');
+      if(nav) nav.style.display = 'none';
+      if(fab) fab.style.display = 'none';
+      const main = document.querySelector('main');
+      if(main) main.style.paddingBottom = '40px';
+    }
+  }
+
+  /* ----- pure helpers (kept free of DOM access so they're easy to test) ----- */
+  function dayDiff(a, b){ // whole days from a to b (both 'YYYY-MM-DD')
+    return Math.round((parseDate(b) - parseDate(a)) / 86400000);
+  }
+  function dayLabel(ds){
+    return parseDate(ds).toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'});
+  }
+
+  // Students reference courses by their normalised key (e.g. "M&A"), which can
+  // differ from the display code ("M & A") — always match on the key.
+  function courseList(){
+    return Object.entries(DATA.courses)
+      .map(([key, c]) => Object.assign({key}, c))
+      .filter(c => ROLLS.some(r => DATA.students[r].courses.some(x => x.code === c.key)))
+      .sort((a,b)=> a.name.localeCompare(b.name));
+  }
+  function displayCode(key){ return (DATA.courses[key] && DATA.courses[key].code) || key; }
+  function sectionsOf(code){
+    const set = new Set();
+    ROLLS.forEach(r => DATA.students[r].courses.forEach(x => { if(x.code===code && x.section) set.add(x.section); }));
+    return Array.from(set).sort();
+  }
+  function rosterFor(code, scope){
+    return ROLLS.filter(r => DATA.students[r].courses.some(c => c.code===code && (!scope || scope==='ALL' || c.section===scope)))
+      .sort((a,b)=> DATA.students[a].name.localeCompare(DATA.students[b].name));
+  }
+  function combineRosters(a, b, mode){ // a, b: arrays of rolls
+    const A = new Set(a), B = new Set(b);
+    let out;
+    if(mode === 'both') out = a.filter(r => B.has(r));
+    else if(mode === 'onlyA') out = a.filter(r => !B.has(r));
+    else if(mode === 'onlyB') out = b.filter(r => !A.has(r));
+    else out = Array.from(new Set([...a, ...b]));
+    return out.sort((x,y)=> DATA.students[x].name.localeCompare(DATA.students[y].name));
+  }
+
+  // Leave is minute-specific: it starts LEAVE_BUFFER_MIN minutes after the
+  // student's last class before the break ends, and finishes LEAVE_BUFFER_MIN
+  // minutes before their first class after it begins. Each student's own
+  // timetable decides both ends, so the window is usually longer than the
+  // official break (and differs from classmate to classmate by the hour).
+  const LEAVE_BUFFER_MIN = 5;
+
+  function shiftMinutes(dateStr, hhmm, delta){
+    const [h, m] = hhmm.split(':').map(Number);
+    const d = parseDate(dateStr);
+    d.setHours(h, m + delta, 0, 0);
+    const pad = n => String(n).padStart(2, '0');
+    return {date: fmtDate(d), time: `${pad(d.getHours())}:${pad(d.getMinutes())}`};
+  }
+  function minuteStamp(dateStr, hhmm){
+    const [h, m] = hhmm.split(':').map(Number);
+    const d = parseDate(dateStr);
+    d.setHours(h, m, 0, 0);
+    return Math.round(d.getTime() / 60000);
+  }
+  function durationLabel(totalMin){
+    const d = Math.floor(totalMin / 1440), h = Math.floor((totalMin % 1440) / 60), m = totalMin % 60;
+    const parts = [];
+    if(d) parts.push(`${d} day${d===1?'':'s'}`);
+    if(h) parts.push(`${h} hr${h===1?'':'s'}`);
+    if(m || !parts.length) parts.push(`${m} min`);
+    return parts.join(' ');
+  }
+  function whenLabel(dateStr, hhmm){ return `${dayLabel(dateStr)}, ${to12h(hhmm)}`; }
+
+  function leaveWindowFor(roll, bs, be){
+    let last = null, first = null, inBreak = 0;
+    sessionsFor(roll).forEach(s => {
+      if(s.date < bs){
+        if(!last || s.date > last.date || (s.date === last.date && s.end > last.end)) last = s;
+      } else if(s.date > be){
+        if(!first || s.date < first.date || (s.date === first.date && s.start < first.start)) first = s;
+      } else inBreak++;
+    });
+    // No class on one side at all: fall back to the edge of the official break.
+    const f = last ? shiftMinutes(last.date, last.end, LEAVE_BUFFER_MIN) : {date: bs, time: '00:00'};
+    const t = first ? shiftMinutes(first.date, first.start, -LEAVE_BUFFER_MIN) : {date: be, time: '23:59'};
+    const minutes = Math.max(0, minuteStamp(t.date, t.time) - minuteStamp(f.date, f.time));
+    return {
+      last: last ? last.date : null, lastEnd: last ? last.end : null,
+      first: first ? first.date : null, firstStart: first ? first.start : null,
+      from: f.date, fromTime: f.time, to: t.date, toTime: t.time,
+      minutes, duration: durationLabel(minutes),
+      inBreak,
+    };
+  }
+  function effectiveLeaveStatus(cfg, roll){
+    const o = cfg && cfg.overrides && cfg.overrides[roll];
+    if(o === 'approved' || o === 'denied') return o;
+    return (cfg && cfg.bulk && cfg.bulk.approved) ? 'approved' : 'pending';
+  }
+  function detectBreak(){
+    const dates = DATA.holidays.filter(h => /diwali/i.test(h.label || '')).map(h => h.date).sort();
+    if(!dates.length) return {start:'', end:''};
+    const start = dates[0];
+    let end = start;
+    // The break continues through consecutive unlabelled holiday dates.
+    while(true){
+      const next = addDays(end, 1);
+      const h = DATA.holidays.find(x => x.date === next);
+      if(h && (!h.label || /diwali/i.test(h.label))) end = next; else break;
+    }
+    return {start, end};
+  }
+
+  /* ----- shared Diwali config ----- */
+  async function loadDiwali(){
+    const raw = await sharedGet(DIWALI_KEY);
+    let cfg = null;
+    if(raw){ try{ cfg = typeof raw === 'string' ? JSON.parse(raw) : raw; }catch(e){ cfg = null; } }
+    if(cfg){ cfg.overrides = cfg.overrides || {}; }
+    diwaliCfg = cfg;
+    diwaliFetchedAt = Date.now();
+    return cfg;
+  }
+  async function refreshDiwaliThen(cb){
+    if(Date.now() - diwaliFetchedAt < 20000) return;
+    const before = JSON.stringify(diwaliCfg);
+    await loadDiwali();
+    if(JSON.stringify(diwaliCfg) !== before && typeof cb === 'function') cb();
+  }
+  // Read-modify-write against the latest copy, so two people editing at once
+  // don't clobber each other's changes any more than necessary.
+  async function updateDiwali(mutator){
+    const cfg = (await loadDiwali()) || {breakStart:'', breakEnd:'', note:'', bulk:{approved:false}, overrides:{}};
+    mutator(cfg);
+    cfg.updatedAt = Date.now();
+    cfg.updatedBy = state.isAdmin ? 'owner' : 'college admin';
+    await sharedSet(DIWALI_KEY, JSON.stringify(cfg));
+    diwaliCfg = cfg;
+    diwaliFetchedAt = Date.now();
+    return cfg;
+  }
+
+  /* ----- student-side card on the dashboard ----- */
+  function renderLeaveCard(){
+    const slot = document.getElementById('dash-leave-slot');
+    if(!slot) return;
+    const cfg = diwaliCfg;
+    if(!state.me || !cfg || !cfg.breakStart || !cfg.breakEnd){ slot.innerHTML = ''; return; }
+    const w = leaveWindowFor(state.me, cfg.breakStart, cfg.breakEnd);
+    if(todayStr() > addDays(w.to, 14)){ slot.innerHTML = ''; return; }
+    const status = effectiveLeaveStatus(cfg, state.me);
+    const badge = status==='approved' ? ['good','Approved'] : status==='denied' ? ['bad','Not approved'] : ['warn','Awaiting approval'];
+    const sub = [];
+    sub.push(w.duration);
+    sub.push(w.last ? `last class ends ${to12h(w.lastEnd)} on ${dayLabel(w.last)}` : 'no class before the break');
+    sub.push(w.first ? `next class starts ${to12h(w.firstStart)} on ${dayLabel(w.first)}` : 'no class after the break');
+    slot.innerHTML = `<div class="adm-leave ${status==='pending' ? '' : status}">
+      <div class="row"><span class="adm-leave-title">Diwali break leave</span><span class="badge ${badge[0]}">${badge[1]}</span></div>
+      <div class="adm-leave-sub" style="margin-top:8px;">FROM</div>
+      <div class="adm-leave-dates" style="margin:2px 0 8px;">${escapeHtml(whenLabel(w.from, w.fromTime))}</div>
+      <div class="adm-leave-sub">TO</div>
+      <div class="adm-leave-dates" style="margin:2px 0 8px;">${escapeHtml(whenLabel(w.to, w.toTime))}</div>
+      <div class="adm-leave-sub">${escapeHtml(sub.join(' · '))}.${status==='denied' ? ' Please contact the administration office.' : ''}${cfg.note ? '<br>' + escapeHtml(cfg.note) : ''}</div>
+      ${w.inBreak ? `<div class="adm-leave-sub" style="margin-top:6px;">Note: you have ${w.inBreak} scheduled class${w.inBreak===1?'':'es'} inside the break dates.</div>` : ''}
+    </div>`;
+  }
+
+  /* ----- admin view ----- */
+  function renderAdmin(){
+    const isOwnerToo = !!state.isAdmin;
+    document.getElementById('adm-back').style.display = isOwnerToo ? '' : 'none';
+    document.getElementById('adm-eyebrow').textContent = state.isCollegeAdmin ? 'COLLEGE ADMINISTRATION' : 'OWNER';
+    $$('#adm-tabs .pill').forEach(p => p.classList.toggle('active', p.dataset.tab === adm.tab));
+    document.getElementById('adm-pane-rosters').style.display = adm.tab === 'rosters' ? '' : 'none';
+    document.getElementById('adm-pane-diwali').style.display = adm.tab === 'diwali' ? '' : 'none';
+    if(adm.tab === 'rosters') renderRosterPane(); else renderDiwaliPane();
+  }
+
+  function selLabel(code){
+    const sc = adm.scope[code] || 'ALL';
+    const base = displayCode(code);
+    return sc === 'ALL' ? base : `${base} · ${sc}`;
+  }
+
+  function renderRosterPane(){
+    const list = courseList();
+    document.getElementById('adm-courses').innerHTML = list.map(c => {
+      const scope = adm.scope[c.key] || 'ALL';
+      const rolls = rosterFor(c.key, scope);
+      const secs = sectionsOf(c.key);
+      const isSel = adm.sel.includes(c.key);
+      const open = !!adm.open[c.key];
+      const total = rosterFor(c.key, 'ALL').length;
+      const secBar = secs.length ? `<div class="adm-secbar">
+          <span class="adm-chip ${scope==='ALL'?'active':''}" data-code="${escapeHtml(c.key)}" data-scope="ALL">All sections</span>
+          ${secs.map(s => `<span class="adm-chip ${scope===s?'active':''}" data-code="${escapeHtml(c.key)}" data-scope="${escapeHtml(s)}">Section ${escapeHtml(s)}</span>`).join('')}
+        </div>` : '';
+      const rows = rolls.map(r => {
+        const st = DATA.students[r];
+        const sec = (st.courses.find(x => x.code === c.key) || {}).section;
+        return `<div class="adm-srow"><div class="adm-sname">${escapeHtml(st.name)}</div>${sec && scope==='ALL' ? `<span class="badge muted">${escapeHtml(sec)}</span>` : ''}<div class="adm-sroll">${escapeHtml(r)}</div></div>`;
+      }).join('');
+      return `<div class="adm-course ${isSel?'sel':''} ${open?'open':''}" data-code="${escapeHtml(c.key)}">
+        <div class="adm-chead" data-toggle="${escapeHtml(c.key)}">
+          <div class="adm-cmain">
+            <div class="adm-cname">${escapeHtml(c.name)}</div>
+            <div class="adm-cmeta">${escapeHtml(c.code)} · ${total} student${total===1?'':'s'}${scope!=='ALL' ? ` · showing ${rolls.length} in section ${escapeHtml(scope)}` : ''}</div>
+          </div>
+          <span class="adm-selbtn ${isSel?'on':''}" data-select="${escapeHtml(c.key)}">${isSel ? '✓ Selected' : 'Select'}</span>
+          <span class="adm-chev">▾</span>
+        </div>
+        <div class="adm-cbody">${secBar}${rows || '<div class="helper-text">No students.</div>'}</div>
+      </div>`;
+    }).join('');
+    renderRosterResult();
+  }
+
+  function currentCombo(){
+    if(adm.sel.length < 2) return null;
+    const [ca, cb] = adm.sel;
+    const a = rosterFor(ca, adm.scope[ca] || 'ALL');
+    const b = rosterFor(cb, adm.scope[cb] || 'ALL');
+    return {ca, cb, a, b, list: combineRosters(a, b, adm.mode)};
+  }
+
+  function renderRosterResult(){
+    const box = document.getElementById('adm-result');
+    if(adm.sel.length === 0){
+      box.innerHTML = `<div style="font-size:13.5px; font-weight:600; margin-bottom:4px;">Compare two subjects</div>
+        <div class="helper-text" style="margin:0;">Tap <b>Select</b> on two subjects below. You'll get everyone enrolled in either one, or just the students who take both.</div>`;
+      return;
+    }
+    if(adm.sel.length === 1){
+      box.innerHTML = `<div class="adm-tags"><span class="adm-tag">${escapeHtml(selLabel(adm.sel[0]))}</span></div>
+        <div class="helper-text" style="margin:10px 0 0;">Select one more subject to combine.</div>`;
+      return;
+    }
+    const k = currentCombo();
+    const A = selLabel(k.ca), B = selLabel(k.cb);
+    const nU = combineRosters(k.a, k.b, 'union').length, nI = combineRosters(k.a, k.b, 'both').length;
+    const nA = combineRosters(k.a, k.b, 'onlyA').length, nB = combineRosters(k.a, k.b, 'onlyB').length;
+    const seg = (m, label, n) => `<span class="adm-chip ${adm.mode===m?'active':''}" data-mode="${m}">${label} (${n})</span>`;
+    box.innerHTML = `
+      <div class="adm-tags"><span class="adm-tag">${escapeHtml(A)}</span><span style="color:var(--muted-2);">+</span><span class="adm-tag">${escapeHtml(B)}</span></div>
+      <div class="adm-seg">
+        ${seg('union', 'Either subject', nU)}
+        ${seg('both', 'Both subjects', nI)}
+        ${seg('onlyA', 'Only ' + escapeHtml(A), nA)}
+        ${seg('onlyB', 'Only ' + escapeHtml(B), nB)}
+      </div>
+      <div style="font-size:13px; font-weight:600; margin-bottom:6px;">${k.list.length} student${k.list.length===1?'':'s'}</div>
+      <div style="max-height:340px; overflow-y:auto;">
+        ${k.list.map(r => `<div class="adm-srow"><div class="adm-sname">${escapeHtml(DATA.students[r].name)}</div><div class="adm-sroll">${escapeHtml(r)}</div></div>`).join('') || '<div class="helper-text">No students match.</div>'}
+      </div>
+      <div class="adm-actions">
+        <button class="btn sm" id="adm-dl">Download CSV</button>
+        <button class="btn sm" id="adm-copy">Copy names</button>
+      </div>`;
+  }
+
+  function toggleSelect(code){
+    const i = adm.sel.indexOf(code);
+    if(i >= 0){ adm.sel.splice(i, 1); }
+    else {
+      adm.sel.push(code);
+      if(adm.sel.length > 2){
+        const dropped = adm.sel.shift();
+        showToast(`Swapped out ${dropped} — two subjects at a time.`);
+      }
+    }
+    renderRosterPane();
+    // with two picked, the comparison sits at the top — take them to it
+    if(adm.sel.length === 2){
+      const main = document.getElementById('main');
+      try{ main.scrollTo({top: 0, behavior: 'smooth'}); }catch(e){ main.scrollTop = 0; }
+    }
+  }
+
+  document.getElementById('adm-courses').addEventListener('click', e => {
+    const chip = e.target.closest('.adm-chip[data-scope]');
+    if(chip){
+      adm.scope[chip.dataset.code] = chip.dataset.scope;
+      renderRosterPane();
+      return;
+    }
+    const selBtn = e.target.closest('[data-select]');
+    if(selBtn){ toggleSelect(selBtn.dataset.select); return; }
+    const head = e.target.closest('[data-toggle]');
+    if(head){
+      const code = head.dataset.toggle;
+      adm.open[code] = !adm.open[code];
+      renderRosterPane();
+    }
+  });
+  document.getElementById('adm-result').addEventListener('click', e => {
+    const m = e.target.closest('[data-mode]');
+    if(m){ adm.mode = m.dataset.mode; renderRosterResult(); return; }
+    const k = currentCombo();
+    if(!k) return;
+    if(e.target.closest('#adm-dl')){
+      const A = selLabel(k.ca), B = selLabel(k.cb);
+      const inA = new Set(k.a), inB = new Set(k.b);
+      downloadCsv(`roster_${A}_${B}_${adm.mode}.csv`.replace(/[^A-Za-z0-9_.&-]+/g, '_'),
+        ['Roll No', 'Name', `In ${A}`, `In ${B}`],
+        k.list.map(r => [r, DATA.students[r].name, inA.has(r) ? 'Yes' : 'No', inB.has(r) ? 'Yes' : 'No']));
+    }
+    if(e.target.closest('#adm-copy')){
+      const text = k.list.map(r => `${DATA.students[r].name} (${r})`).join('\n');
+      try{ navigator.clipboard.writeText(text).then(()=> showToast('Copied.'), ()=> showToast("Couldn't copy — use the CSV instead.")); }
+      catch(err){ showToast("Couldn't copy — use the CSV instead."); }
+    }
+  });
+
+  /* ----- Diwali pane ----- */
+  function diwaliGroups(cfg){
+    const bs = cfg.breakStart, be = cfg.breakEnd;
+    const groups = {};
+    ROLLS.forEach(r => {
+      const w = leaveWindowFor(r, bs, be);
+      const key = `${w.last || ''} ${w.lastEnd || ''}|${w.first || ''} ${w.firstStart || ''}`;
+      (groups[key] = groups[key] || {w, rolls: []}).rolls.push(r);
+    });
+    return Object.entries(groups)
+      .map(([key, g]) => ({key, w: g.w, rolls: g.rolls.sort((a,b)=> DATA.students[a].name.localeCompare(DATA.students[b].name))}))
+      .sort((a,b)=> b.rolls.length - a.rolls.length);
+  }
+
+  async function renderDiwaliPane(){
+    const pane = document.getElementById('adm-pane-diwali');
+    if(!diwaliCfg && Date.now() - diwaliFetchedAt > 5000) await loadDiwali();
+    const det = detectBreak();
+    const cfg = diwaliCfg || {breakStart: det.start, breakEnd: det.end, note: '', bulk:{approved:false}, overrides:{}};
+    const configured = !!(diwaliCfg && diwaliCfg.breakStart && diwaliCfg.breakEnd);
+    const bs = cfg.breakStart, be = cfg.breakEnd;
+    const valid = bs && be && bs <= be;
+
+    let html = `<div class="card">
+      <div style="font-size:13.5px; font-weight:600;">Official break dates</div>
+      <div class="helper-text" style="margin:3px 0 0;">${det.start ? `The academic calendar marks ${escapeHtml(dayLabel(det.start))} – ${escapeHtml(dayLabel(det.end))}.` : 'No Diwali break was found in the academic calendar — enter the dates.'} Students' leave is worked out from this.</div>
+      <label class="adm-field">From</label><input type="date" id="dw-start" value="${escapeHtml(bs || '')}">
+      <label class="adm-field">To (last day of the break)</label><input type="date" id="dw-end" value="${escapeHtml(be || '')}">
+      <label class="adm-field">Note shown to students (optional)</label><input type="text" id="dw-note" value="${escapeHtml(cfg.note || '')}" placeholder="e.g. Approved by the Dean's office" autocomplete="off">
+      <div class="gate-error" id="dw-error"></div>
+      <button class="btn primary sm" id="dw-save" style="margin-top:6px;">${configured ? 'Update dates' : 'Save and publish to students'}</button>
+    </div>`;
+
+    if(!configured){
+      html += `<p class="helper-text">Until this is saved, students see nothing about the break. Once saved, each student sees their own leave window on their dashboard, marked as awaiting approval.</p>`;
+      pane.innerHTML = html;
+      return;
+    }
+    if(!valid){ pane.innerHTML = html; return; }
+
+    const groups = diwaliGroups(cfg);
+    const total = ROLLS.length;
+    let nApproved = 0, nDenied = 0;
+    ROLLS.forEach(r => { const s = effectiveLeaveStatus(cfg, r); if(s==='approved') nApproved++; else if(s==='denied') nDenied++; });
+    const nPending = total - nApproved - nDenied;
+    const bulkOn = !!(cfg.bulk && cfg.bulk.approved);
+    const clashes = ROLLS.filter(r => leaveWindowFor(r, bs, be).inBreak > 0).length;
+
+    html += `<div class="stats-row" style="margin-top:14px;">
+        <div class="stat"><div class="num">${nApproved}</div><div class="lbl">APPROVED</div></div>
+        <div class="stat"><div class="num">${nPending}</div><div class="lbl">PENDING</div></div>
+        <div class="stat"><div class="num">${nDenied}</div><div class="lbl">NOT APPROVED</div></div>
+      </div>
+      <div class="card" style="margin-top:14px;">
+        <div style="font-size:13.5px; font-weight:600;">Approve leave for everyone</div>
+        <div class="helper-text" style="margin:3px 0 10px;">Each student's leave runs to the minute: it starts ${LEAVE_BUFFER_MIN} minutes after their last class before the break ends, and ends ${LEAVE_BUFFER_MIN} minutes before their first class after it begins — so it follows their own timetable, not the official break dates. Individual choices you make further down take priority over this.</div>
+        ${bulkOn
+          ? `<div class="badge good" style="display:inline-block; margin-bottom:10px;">Approved for all${cfg.bulk.at ? ' · ' + escapeHtml(new Date(cfg.bulk.at).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})) : ''}</div><br>
+             <button class="btn sm danger-outline" id="dw-bulk-off">Withdraw approval for all</button>`
+          : `<button class="btn primary sm" id="dw-bulk-on">Approve leave for all ${total} students</button>`}
+        ${clashes ? `<div class="helper-text" style="color:var(--warn);">⚠ ${clashes} student${clashes===1?' has':'s have'} classes scheduled inside the break dates — their window is still measured from their last class before and first class after, so check them individually.</div>` : ''}
+      </div>
+      <div class="adm-actions" style="margin-bottom:6px;">
+        <button class="btn sm primary" id="dw-csv">Download leave list (CSV)</button>
+        <button class="btn sm" id="dw-csv-approved">Approved only</button>
+      </div>
+      <h2 class="section-title">Find a student</h2>
+      <input type="text" id="dw-search" placeholder="Search by name or roll number" value="${escapeHtml(adm.query)}" autocomplete="off">
+      <div id="dw-results" style="margin-top:10px;"></div>
+      <h2 class="section-title" id="dw-groups-title">By timetable pattern</h2>
+      <p class="helper-text" style="margin:-6px 0 10px;">Students are grouped by the exact time their last class ends and their next one starts. Tap a group to see who's in it.</p>
+      <div id="dw-groups"></div>`;
+    pane.innerHTML = html;
+    renderDiwaliGroups(cfg, groups);
+    renderDiwaliSearch(cfg);
+  }
+
+  function leaveToggleHtml(cfg, r){
+    const s = effectiveLeaveStatus(cfg, r);
+    const label = s==='approved' ? 'Approved' : s==='denied' ? 'Not approved' : 'Pending';
+    return `<span class="adm-lv ${s==='pending'?'':s}" data-lv="${escapeHtml(r)}" title="Tap to change">${label}</span>`;
+  }
+  function studentLeaveRow(cfg, r, showWindow){
+    const w = leaveWindowFor(r, cfg.breakStart, cfg.breakEnd);
+    return `<div class="adm-srow"><div class="adm-sname">${escapeHtml(DATA.students[r].name)}<div class="adm-sroll" style="white-space:normal;">${escapeHtml(r)}${showWindow ? ` · ${escapeHtml(whenLabel(w.from, w.fromTime))} → ${escapeHtml(whenLabel(w.to, w.toTime))} (${escapeHtml(w.duration)})` : ''}</div></div>${leaveToggleHtml(cfg, r)}</div>`;
+  }
+
+  function renderDiwaliGroups(cfg, groups){
+    document.getElementById('dw-groups').innerHTML = groups.map(g => {
+      const w = g.w;
+      const open = !!adm.groupOpen[g.key];
+      const title = `${w.last ? 'Last class ends ' + whenLabel(w.last, w.lastEnd) : 'No class before break'} → ${w.first ? 'next starts ' + whenLabel(w.first, w.firstStart) : 'no class after'}`;
+      return `<div class="adm-grp ${open?'open':''}" data-gkey="${escapeHtml(g.key)}">
+        <div class="adm-grp-head" data-gtoggle="${escapeHtml(g.key)}">
+          <div class="row" style="align-items:flex-start;"><div class="adm-grp-title">${escapeHtml(title)}</div><span class="badge">${g.rolls.length} student${g.rolls.length===1?'':'s'}</span></div>
+          <div class="adm-grp-sub">Leave ${escapeHtml(whenLabel(w.from, w.fromTime))} → ${escapeHtml(whenLabel(w.to, w.toTime))} · ${escapeHtml(w.duration)}</div>
+        </div>
+        <div class="adm-grp-body">
+          <div class="adm-actions" style="margin:2px 0 6px;">
+            <button class="btn sm" data-ggrp="approved" data-gk="${escapeHtml(g.key)}">Approve this group</button>
+            <button class="btn sm" data-ggrp="clear" data-gk="${escapeHtml(g.key)}">Reset to default</button>
+          </div>
+          ${g.rolls.map(r => studentLeaveRow(cfg, r, false)).join('')}
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function renderDiwaliSearch(cfg){
+    const box = document.getElementById('dw-results');
+    if(!box) return;
+    const q = adm.query.trim().toLowerCase();
+    if(!q){ box.innerHTML = ''; return; }
+    const hits = ROLLS.filter(r => DATA.students[r].name.toLowerCase().includes(q) || r.toLowerCase().includes(q)).slice(0, 25);
+    box.innerHTML = hits.length
+      ? `<div class="card" style="padding:6px 14px;">${hits.map(r => studentLeaveRow(cfg, r, true)).join('')}</div>`
+      : '<div class="helper-text">No one matches.</div>';
+  }
+
+  document.getElementById('adm-pane-diwali').addEventListener('input', e => {
+    if(e.target.id === 'dw-search'){ adm.query = e.target.value; if(diwaliCfg) renderDiwaliSearch(diwaliCfg); }
+  });
+  document.getElementById('adm-pane-diwali').addEventListener('click', async e => {
+    const t = e.target;
+    if(t.closest('#dw-save')){
+      const bs = document.getElementById('dw-start').value, be = document.getElementById('dw-end').value;
+      const note = document.getElementById('dw-note').value.trim();
+      const err = document.getElementById('dw-error');
+      err.textContent = '';
+      if(!bs || !be){ err.textContent = 'Enter both dates.'; return; }
+      if(bs > be){ err.textContent = 'The start date must be on or before the end date.'; return; }
+      await updateDiwali(c => { c.breakStart = bs; c.breakEnd = be; c.note = note; c.bulk = c.bulk || {approved:false}; });
+      showToast('Saved. Students now see their leave window.');
+      renderDiwaliPane();
+      return;
+    }
+    if(t.closest('#dw-bulk-on')){
+      if(!confirm(`Approve Diwali break leave for all ${ROLLS.length} students?`)) return;
+      await updateDiwali(c => { c.bulk = {approved:true, at:Date.now()}; });
+      showToast('Leave approved for all students.');
+      renderDiwaliPane();
+      return;
+    }
+    if(t.closest('#dw-bulk-off')){
+      if(!confirm('Withdraw the blanket approval? Students will go back to "awaiting approval" unless you approved them individually.')) return;
+      await updateDiwali(c => { c.bulk = {approved:false}; });
+      showToast('Blanket approval withdrawn.');
+      renderDiwaliPane();
+      return;
+    }
+    if(t.closest('#dw-csv-approved')){ exportLeaveCsv(true); return; }
+    if(t.closest('#dw-csv')){ exportLeaveCsv(false); return; }
+
+    const lv = t.closest('[data-lv]');
+    if(lv){
+      const roll = lv.dataset.lv;
+      // Cycle the individual override: default -> approved -> not approved -> default
+      // (when everyone's already approved: default -> not approved -> default).
+      await updateDiwali(c => {
+        const bulkOn = !!(c.bulk && c.bulk.approved);
+        const o = c.overrides[roll];
+        if(!o) c.overrides[roll] = bulkOn ? 'denied' : 'approved';
+        else if(o === 'approved' && !bulkOn) c.overrides[roll] = 'denied';
+        else delete c.overrides[roll];
+      });
+      renderDiwaliPane();
+      return;
+    }
+    const gbtn = t.closest('[data-ggrp]');
+    if(gbtn){
+      const group = diwaliGroups(diwaliCfg).find(g => g.key === gbtn.dataset.gk);
+      if(!group) return;
+      const approve = gbtn.dataset.ggrp === 'approved';
+      await updateDiwali(c => {
+        group.rolls.forEach(r => { if(approve) c.overrides[r] = 'approved'; else delete c.overrides[r]; });
+      });
+      showToast(approve ? `Approved ${group.rolls.length} students.` : 'Reset to default.');
+      renderDiwaliPane();
+      return;
+    }
+    const gh = t.closest('[data-gtoggle]');
+    if(gh){
+      const k = gh.dataset.gtoggle;
+      adm.groupOpen[k] = !adm.groupOpen[k];
+      gh.parentElement.classList.toggle('open', adm.groupOpen[k]);
+    }
+  });
+
+  function exportLeaveCsv(approvedOnly){
+    const cfg = diwaliCfg;
+    if(!cfg || !cfg.breakStart) return;
+    const stamp = (d, t) => `${d} ${t}`;
+    let rolls = ROLLS.slice().sort();
+    if(approvedOnly) rolls = rolls.filter(r => effectiveLeaveStatus(cfg, r) === 'approved');
+    if(!rolls.length){ showToast('No approved students yet.'); return; }
+    const rows = rolls.map(r => {
+      const w = leaveWindowFor(r, cfg.breakStart, cfg.breakEnd);
+      const st = effectiveLeaveStatus(cfg, r);
+      return [r, DATA.students[r].name,
+              w.last || '', w.lastEnd || '', stamp(w.from, w.fromTime),
+              w.first || '', w.firstStart || '', stamp(w.to, w.toTime),
+              w.minutes, w.duration,
+              st === 'approved' ? 'Approved' : st === 'denied' ? 'Not approved' : 'Pending'];
+    });
+    downloadCsv(approvedOnly ? 'diwali_leave_approved.csv' : 'diwali_leave_list.csv',
+      ['Roll No', 'Name',
+       'Last class date', 'Last class ends', `Leave starts (${LEAVE_BUFFER_MIN} min after)`,
+       'First class date', 'First class starts', `Leave ends (${LEAVE_BUFFER_MIN} min before)`,
+       'Total minutes', 'Duration', 'Status'],
+      rows);
+  }
+
+  document.getElementById('adm-tabs').addEventListener('click', e => {
+    const p = e.target.closest('.pill');
+    if(!p) return;
+    adm.tab = p.dataset.tab;
+    renderAdmin();
+  });
+  document.getElementById('adm-back').addEventListener('click', () => showView(state.me ? 'dashboard' : 'onboard'));
+  document.getElementById('btn-open-admin').addEventListener('click', () => {
+    if(!state.isAdmin) return;
+    document.getElementById('modal-settings').classList.remove('active');
+    showView('admin');
+  });
+
+  /* ----- owner: manage the college admin passcode ----- */
+  async function renderCollegeAdminStatus(){
+    const el = document.getElementById('college-admin-status');
+    if(!el) return;
+    const cur = await sharedGetStrict(COLLEGE_ADMIN_PASS_KEY);
+    el.textContent = !cur.ok ? "Couldn't check right now." : (cur.value ? 'Status: active — a college admin passcode is set.' : 'Status: no college admin access set up.');
+  }
+  document.getElementById('btn-set-college-admin').addEventListener('click', async () => {
+    const val = document.getElementById('college-admin-pass').value.trim();
+    const err = document.getElementById('college-admin-error');
+    err.textContent = '';
+    if(val.length < 6){ err.textContent = 'Use at least 6 characters.'; return; }
+    const hash = await sha256Hex(val);
+    const ownerHash = await sharedGet(OWNER_PASSCODE_KEY);
+    if(hash === ownerHash){ err.textContent = 'That matches the owner passcode — choose a different one.'; return; }
+    await sharedSet(COLLEGE_ADMIN_PASS_KEY, hash);
+    document.getElementById('college-admin-pass').value = '';
+    showToast('College admin passcode saved.');
+    renderCollegeAdminStatus();
+  });
+  document.getElementById('btn-remove-college-admin').addEventListener('click', async () => {
+    if(!confirm('Remove college admin access? Existing admin sessions will be signed out.')) return;
+    await sharedDelete(COLLEGE_ADMIN_PASS_KEY);
+    showToast('College admin access removed.');
+    renderCollegeAdminStatus();
+  });
+
   /* ---------------- Boot ---------------- */
   // Shown once, and only once, to a device that's already signed in (from
   // before passwords existed) but has no account on file yet. Blocks
@@ -2571,6 +3353,34 @@ const EMBEDDED_MESS_MENU = {"month": "September 2026", "days": {"Monday": {"Brea
       btn.addEventListener('click', submit);
       $('#pw-setup-confirm').addEventListener('keydown', e=>{ if(e.key==='Enter') submit(); });
     });
+  }
+
+  /* ---------------- Support strip (persistent, sits under the bottom nav) ---------------- */
+  const SUPPORT_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSfCQHD8hSqjjgn9rh0dRdKrKHUhGsSjOdDR1wt7st4XYhQqKg/viewform?usp=publish-editor';
+
+  // Shows/hides the strip based on current status, then re-measures the
+  // layout so the nav bar, the mess-menu button, and the page's own bottom
+  // padding all shift to make room for it (or reclaim the space when it's
+  // hidden) — rather than hardcoding a pixel height that could drift out of
+  // sync with what's actually rendered on a given device.
+  function updateSupportStrip(){
+    const strip = document.getElementById('support-strip');
+    if(!strip) return;
+    const shouldShow = !!state.me && !state.isAdmin && !state.isSupporter;
+    strip.style.display = shouldShow ? '' : 'none';
+    layoutBottomChrome();
+  }
+
+  function layoutBottomChrome(){
+    const strip = document.getElementById('support-strip');
+    const nav = document.querySelector('nav.bottomnav');
+    const fabWrap = document.querySelector('.support-fab-wrap');
+    const main = document.querySelector('main');
+    const stripShown = !!(strip && strip.style.display !== 'none');
+    const stripHeight = stripShown ? strip.getBoundingClientRect().height : 0;
+    if(nav) nav.style.bottom = stripHeight + 'px';
+    if(fabWrap) fabWrap.style.bottom = stripHeight + 'px';
+    if(main) main.style.paddingBottom = (100 + stripHeight) + 'px';
   }
 
   async function boot(){
@@ -2605,7 +3415,17 @@ const EMBEDDED_MESS_MENU = {"month": "September 2026", "days": {"Monday": {"Brea
     if(attendance){
       try{ state.attendance = JSON.parse(attendance); }catch(e){ state.attendance={}; }
     }
-    state.email = email || null;
+    let collegeFlag = null;
+    try{ collegeFlag = await storeGet(COLLEGE_ADMIN_FLAG); }catch(e){}
+    state.isCollegeAdmin = collegeFlag === 'true' && isAdminFlag !== 'true';
+    state.email = state.isCollegeAdmin ? null : (email || null);
+    state.isAdmin = isAdminFlag === 'true';
+    if(state.email && !state.isAdmin){
+      const account = await fetchAccount(state.email);
+      state.isSupporter = !!(account && account.supporter);
+    }
+    updateSupportStrip();
+    applyRoleChrome();
 
     // Backfill the shared identity index for anyone who already had an
     // identity before this index existed — migrated accounts, mainly.
@@ -2631,9 +3451,12 @@ const EMBEDDED_MESS_MENU = {"month": "September 2026", "days": {"Monday": {"Brea
 
     if(state.me){
       showView('dashboard');
+    } else if(state.isCollegeAdmin){
+      showView('admin');
     } else {
       showView('onboard');
     }
+    loadDiwali().then(()=>{ if(state.currentView==='dashboard') renderLeaveCard(); });
 
     // Fetch the live sheet right away, then keep polling in the background so
     // the schedule stays current without a manual refresh.
