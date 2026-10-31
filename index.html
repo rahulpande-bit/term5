@@ -140,7 +140,7 @@
   .btn.danger-outline:hover{background:var(--bad-soft);}
 
   /* ---------- Inputs ---------- */
-  input[type=text], input[type=search], input[type=date], input[type=email], input[type=password]{
+  input[type=text], input[type=search], input[type=date], input[type=datetime-local], input[type=email], input[type=password]{
     width:100%; padding:12px 14px; border-radius:var(--radius-s);
     border:1px solid var(--border-2); background:var(--surface-2); color:var(--text);
     font-size:14.5px; font-family:var(--sans);
@@ -525,7 +525,6 @@
       <h1 class="page-title" id="dash-greeting">Hi there</h1>
 
       <div id="dash-holiday-slot"></div>
-      <div id="dash-leave-slot"></div>
 
       <div class="stats-row" id="dash-stats"></div>
 
@@ -580,7 +579,7 @@
       <h1 class="page-title" style="margin-bottom:14px;">Admin dashboard</h1>
       <div class="pill-group" id="adm-tabs" style="margin-bottom:16px;">
         <div class="pill active" data-tab="rosters">Course rosters</div>
-        <div class="pill" data-tab="diwali">Diwali break</div>
+        <div class="pill" data-tab="diwali">Gate sheet</div>
       </div>
 
       <div id="adm-pane-rosters">
@@ -710,7 +709,7 @@
         <h2 class="section-title">Owner tools</h2>
         <div class="card" style="margin-bottom:10px;">
           <div style="font-size:13px; font-weight:600; margin-bottom:2px;">Admin dashboard</div>
-          <div class="helper-text" style="margin-bottom:12px;">Course rosters (pick any two subjects to see everyone across both, or just the students they share) and the Diwali break leave tool. Only visible here — students never see this.</div>
+          <div class="helper-text" style="margin-bottom:12px;">Course rosters (pick any two subjects to see everyone across both, or just the students they share) and the Diwali break gate sheet (each student's free time between their last class before the break and first class after it, to download or print). Only visible here — students never see this.</div>
           <button class="btn primary sm" id="btn-open-admin">Open admin dashboard</button>
         </div>
         <div class="card" style="margin-bottom:10px;">
@@ -742,7 +741,7 @@
         </div>
         <div class="card" style="margin-bottom:10px;">
           <div style="font-size:13px; font-weight:600; margin-bottom:2px;">College admin access</div>
-          <div class="helper-text" style="margin-bottom:12px;">Gives the college administration their own passcode. They type it into the password box on the sign-in screen (any email) and land on the admin dashboard — course rosters and the Diwali leave tool only. It does not unlock these owner tools, user management, or anyone's attendance. Changing the passcode signs existing admin sessions out within about a minute; removing it ends their access.</div>
+          <div class="helper-text" style="margin-bottom:12px;">Gives the college administration their own passcode. They type it into the password box on the sign-in screen (any email) and land on the admin dashboard — course rosters and the Diwali gate sheet only. It does not unlock these owner tools, user management, or anyone's attendance. Changing the passcode signs existing admin sessions out within about a minute; removing it ends their access.</div>
           <div class="helper-text" id="college-admin-status" style="margin:0 0 10px;">—</div>
           <input type="password" id="college-admin-pass" placeholder="New college admin passcode" autocomplete="off">
           <div class="gate-error" id="college-admin-error"></div>
@@ -760,7 +759,7 @@
         <p class="helper-text">Everyone signs in with their own email and a password they set themselves — no codes to hand out anymore, and no limit on how many devices one account can be used from. One student can only ever be linked to one email; the app won't let a second account claim a name that's already taken. Note: email here isn't verified (no confirmation link) — it's a real login, just not one this app can confirm you actually own that inbox.</p>
       </div>
 
-      <p class="helper-text" style="margin-top:16px;">This planner only uses schedule and roster information the college already shared with the batch (like the course nominal-list email) — nothing was accessed that wasn't already available to students. No private or restricted data has been used. If the college administration has been given access, it covers course rosters and the Diwali break leave status only — never anyone's attendance marks or account details.</p>
+      <p class="helper-text" style="margin-top:16px;">This planner only uses schedule and roster information the college already shared with the batch (like the course nominal-list email) — nothing was accessed that wasn't already available to students. No private or restricted data has been used. If the college administration has been given access, it covers course rosters and the Diwali break free-time sheet only — never anyone's attendance marks or account details.</p>
 
       <div class="modal-close-row"><button class="btn sm" id="settings-close">Close</button></div>
     </div>
@@ -941,7 +940,7 @@ const EMBEDDED_MESS_MENU = {"month": "September 2026", "days": {"Monday": {"Brea
   const PASSCODE_VERIFIED_KEY = 'passcode_verified';
   const IS_ADMIN_KEY = 'is_admin';
   // College administration gets a separate, narrower credential: it opens the
-  // admin dashboard (rosters + Diwali leave) and nothing else.
+  // admin dashboard (rosters + Diwali gate sheet) and nothing else.
   const COLLEGE_ADMIN_PASS_KEY = 'college_admin_passcode';
   const COLLEGE_ADMIN_FLAG = 'is_college_admin';
   const COLLEGE_ADMIN_STAMP = 'college_admin_stamp';
@@ -1526,9 +1525,6 @@ const EMBEDDED_MESS_MENU = {"month": "September 2026", "days": {"Monday": {"Brea
       }
       syncSchedule();
       syncMessMenu();
-      refreshDiwaliThen(()=>{
-        if(state.currentView==='dashboard') renderLeaveCard();
-      });
     }
     setInterval(tick, SYNC_POLL_MS);
     document.addEventListener('visibilitychange', ()=>{
@@ -1760,8 +1756,6 @@ const EMBEDDED_MESS_MENU = {"month": "September 2026", "days": {"Monday": {"Brea
       list.innerHTML = todaysSessions.map(sess => sessionCardHtml(sess, courseSessionCounts)).join('');
     }
 
-    renderLeaveCard();
-    refreshDiwaliThen(renderLeaveCard);
     renderFriendsWidget();
   }
 
@@ -2737,10 +2731,6 @@ const EMBEDDED_MESS_MENU = {"month": "September 2026", "days": {"Monday": {"Brea
   setInterval(()=>{ if($('#modal-mess').classList.contains('active')) updateMessStatusBadge(); }, 60000);
 
   /* ---------------- College admin dashboard ---------------- */
-  const DIWALI_KEY = 'diwali_leave';
-  let diwaliCfg = null;      // latest shared config: {breakStart, breakEnd, note, bulk, overrides, updatedAt}
-  let diwaliFetchedAt = 0;
-
   const adm = {
     tab: 'rosters',
     open: {},                // course code -> expanded?
@@ -2749,6 +2739,8 @@ const EMBEDDED_MESS_MENU = {"month": "September 2026", "days": {"Monday": {"Brea
     mode: 'union',           // union | both | onlyA | onlyB
     groupOpen: {},
     query: '',
+    bs: '', be: '',          // official break dates (in memory; auto-detected from the calendar)
+    checkAt: '',             // 'YYYY-MM-DDTHH:MM' used for the "free at this time?" check
   };
 
   function isAnyAdmin(){ return !!(state.isAdmin || state.isCollegeAdmin); }
@@ -2853,11 +2845,6 @@ const EMBEDDED_MESS_MENU = {"month": "September 2026", "days": {"Monday": {"Brea
       inBreak,
     };
   }
-  function effectiveLeaveStatus(cfg, roll){
-    const o = cfg && cfg.overrides && cfg.overrides[roll];
-    if(o === 'approved' || o === 'denied') return o;
-    return (cfg && cfg.bulk && cfg.bulk.approved) ? 'approved' : 'pending';
-  }
   // The break starts on the day the calendar labels as Diwali and runs for as
   // long as nobody has a class. Going by the schedule itself (rather than how
   // each following day happens to be labelled) means it works the same whether
@@ -2883,60 +2870,6 @@ const EMBEDDED_MESS_MENU = {"month": "September 2026", "days": {"Monday": {"Brea
       if(isSunday || isOtherNamed) end = addDays(end, -1); else break;
     }
     return {start, end};
-  }
-
-  /* ----- shared Diwali config ----- */
-  async function loadDiwali(){
-    const raw = await sharedGet(DIWALI_KEY);
-    let cfg = null;
-    if(raw){ try{ cfg = typeof raw === 'string' ? JSON.parse(raw) : raw; }catch(e){ cfg = null; } }
-    if(cfg){ cfg.overrides = cfg.overrides || {}; }
-    diwaliCfg = cfg;
-    diwaliFetchedAt = Date.now();
-    return cfg;
-  }
-  async function refreshDiwaliThen(cb){
-    if(Date.now() - diwaliFetchedAt < 20000) return;
-    const before = JSON.stringify(diwaliCfg);
-    await loadDiwali();
-    if(JSON.stringify(diwaliCfg) !== before && typeof cb === 'function') cb();
-  }
-  // Read-modify-write against the latest copy, so two people editing at once
-  // don't clobber each other's changes any more than necessary.
-  async function updateDiwali(mutator){
-    const cfg = (await loadDiwali()) || {breakStart:'', breakEnd:'', note:'', bulk:{approved:false}, overrides:{}};
-    mutator(cfg);
-    cfg.updatedAt = Date.now();
-    cfg.updatedBy = state.isAdmin ? 'owner' : 'college admin';
-    await sharedSet(DIWALI_KEY, JSON.stringify(cfg));
-    diwaliCfg = cfg;
-    diwaliFetchedAt = Date.now();
-    return cfg;
-  }
-
-  /* ----- student-side card on the dashboard ----- */
-  function renderLeaveCard(){
-    const slot = document.getElementById('dash-leave-slot');
-    if(!slot) return;
-    const cfg = diwaliCfg;
-    if(!state.me || !cfg || !cfg.breakStart || !cfg.breakEnd){ slot.innerHTML = ''; return; }
-    const w = leaveWindowFor(state.me, cfg.breakStart, cfg.breakEnd);
-    if(todayStr() > addDays(w.to, 14)){ slot.innerHTML = ''; return; }
-    const status = effectiveLeaveStatus(cfg, state.me);
-    const badge = status==='approved' ? ['good','Approved'] : status==='denied' ? ['bad','Not approved'] : ['warn','Awaiting approval'];
-    const sub = [];
-    sub.push(w.duration);
-    sub.push(w.last ? `last class ends ${to12h(w.lastEnd)} on ${dayLabel(w.last)}` : 'no class before the break');
-    sub.push(w.first ? `next class starts ${to12h(w.firstStart)} on ${dayLabel(w.first)}` : 'no class after the break');
-    slot.innerHTML = `<div class="adm-leave ${status==='pending' ? '' : status}">
-      <div class="row"><span class="adm-leave-title">Diwali break leave</span><span class="badge ${badge[0]}">${badge[1]}</span></div>
-      <div class="adm-leave-sub" style="margin-top:8px;">FROM</div>
-      <div class="adm-leave-dates" style="margin:2px 0 8px;">${escapeHtml(whenLabel(w.from, w.fromTime))}</div>
-      <div class="adm-leave-sub">TO</div>
-      <div class="adm-leave-dates" style="margin:2px 0 8px;">${escapeHtml(whenLabel(w.to, w.toTime))}</div>
-      <div class="adm-leave-sub">${escapeHtml(sub.join(' · '))}.${status==='denied' ? ' Please contact the administration office.' : ''}${cfg.note ? '<br>' + escapeHtml(cfg.note) : ''}</div>
-      ${w.inBreak ? `<div class="adm-leave-sub" style="margin-top:6px;">Note: you have ${w.inBreak} scheduled class${w.inBreak===1?'':'es'} inside the break dates.</div>` : ''}
-    </div>`;
   }
 
   /* ----- admin view ----- */
@@ -3085,12 +3018,30 @@ const EMBEDDED_MESS_MENU = {"month": "September 2026", "days": {"Monday": {"Brea
     }
   });
 
-  /* ----- Diwali pane ----- */
-  function diwaliGroups(cfg){
-    const bs = cfg.breakStart, be = cfg.breakEnd;
+  /* ----- Gate sheet (Diwali break free time) ----- */
+  // Not an approval flow and nothing is shown to students: this is a plain
+  // reference sheet. For every student it gives the stretch with no scheduled
+  // class between the break — so the gate can see at a glance who is free to
+  // be off campus at a given moment.
+  function nowLocalInput(){
+    const d = new Date(), p = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+  }
+  function stampFromInput(v){ // 'YYYY-MM-DDTHH:MM' -> minute stamp, or null
+    const m = /^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})/.exec(v || '');
+    return m ? minuteStamp(m[1], m[2]) : null;
+  }
+  function isFreeAt(w, stamp){
+    return stamp != null && stamp >= minuteStamp(w.from, w.fromTime) && stamp <= minuteStamp(w.to, w.toTime);
+  }
+  function gateRows(){
+    return ROLLS.slice().sort().map(r => ({roll: r, name: DATA.students[r].name, w: leaveWindowFor(r, adm.bs, adm.be)}));
+  }
+
+  function diwaliGroups(){
     const groups = {};
     ROLLS.forEach(r => {
-      const w = leaveWindowFor(r, bs, be);
+      const w = leaveWindowFor(r, adm.bs, adm.be);
       const key = `${w.last || ''} ${w.lastEnd || ''}|${w.first || ''} ${w.firstStart || ''}`;
       (groups[key] = groups[key] || {w, rolls: []}).rolls.push(r);
     });
@@ -3099,172 +3050,146 @@ const EMBEDDED_MESS_MENU = {"month": "September 2026", "days": {"Monday": {"Brea
       .sort((a,b)=> b.rolls.length - a.rolls.length);
   }
 
-  async function renderDiwaliPane(){
+  function renderDiwaliPane(){
     const pane = document.getElementById('adm-pane-diwali');
-    if(!diwaliCfg && Date.now() - diwaliFetchedAt > 5000) await loadDiwali();
     const det = detectBreak();
-    const cfg = diwaliCfg || {breakStart: det.start, breakEnd: det.end, note: '', bulk:{approved:false}, overrides:{}};
-    const configured = !!(diwaliCfg && diwaliCfg.breakStart && diwaliCfg.breakEnd);
-    const bs = cfg.breakStart, be = cfg.breakEnd;
-    const valid = bs && be && bs <= be;
+    if(!adm.bs && !adm.be){ adm.bs = det.start; adm.be = det.end; }
+    if(!adm.checkAt) adm.checkAt = nowLocalInput();
+    const valid = adm.bs && adm.be && adm.bs <= adm.be;
 
     let html = `<div class="card">
-      <div style="font-size:13.5px; font-weight:600;">Official break dates</div>
-      <div class="helper-text" style="margin:3px 0 0;">${det.start ? `The academic calendar marks ${escapeHtml(dayLabel(det.start))} – ${escapeHtml(dayLabel(det.end))}.` : 'No Diwali break was found in the academic calendar — enter the dates.'} Students' leave is worked out from this.</div>
-      <label class="adm-field">From</label><input type="date" id="dw-start" value="${escapeHtml(bs || '')}">
-      <label class="adm-field">To (last day of the break)</label><input type="date" id="dw-end" value="${escapeHtml(be || '')}">
-      <label class="adm-field">Note shown to students (optional)</label><input type="text" id="dw-note" value="${escapeHtml(cfg.note || '')}" placeholder="e.g. Approved by the Dean's office" autocomplete="off">
-      <div class="gate-error" id="dw-error"></div>
-      <button class="btn primary sm" id="dw-save" style="margin-top:6px;">${configured ? 'Update dates' : 'Save and publish to students'}</button>
+      <div style="font-size:13.5px; font-weight:600;">Free time around the break</div>
+      <div class="helper-text" style="margin:3px 0 0;">For each student: from ${LEAVE_BUFFER_MIN} minutes after their last class before the break ends, to ${LEAVE_BUFFER_MIN} minutes before their first class after it starts. Between those two moments they have no class — so this works as a gate sheet for anyone leaving earlier, or coming back later, than the official break.</div>
+      <label class="adm-field">Official break — first day</label><input type="date" id="dw-start" value="${escapeHtml(adm.bs || '')}">
+      <label class="adm-field">Official break — last day</label><input type="date" id="dw-end" value="${escapeHtml(adm.be || '')}">
+      <div class="helper-text">${det.start ? `The academic calendar marks ${escapeHtml(dayLabel(det.start))} – ${escapeHtml(dayLabel(det.end))}.` : 'No Diwali break was found in the calendar — enter the dates.'}</div>
+      <div class="gate-error" id="dw-error">${adm.bs && adm.be && adm.bs > adm.be ? 'The first day must be on or before the last day.' : ''}</div>
     </div>`;
-
-    if(!configured){
-      html += `<p class="helper-text">Until this is saved, students see nothing about the break. Once saved, each student sees their own leave window on their dashboard, marked as awaiting approval.</p>`;
-      pane.innerHTML = html;
-      return;
-    }
     if(!valid){ pane.innerHTML = html; return; }
 
-    const groups = diwaliGroups(cfg);
-    const total = ROLLS.length;
-    let nApproved = 0, nDenied = 0;
-    ROLLS.forEach(r => { const s = effectiveLeaveStatus(cfg, r); if(s==='approved') nApproved++; else if(s==='denied') nDenied++; });
-    const nPending = total - nApproved - nDenied;
-    const bulkOn = !!(cfg.bulk && cfg.bulk.approved);
-    const clashes = ROLLS.filter(r => leaveWindowFor(r, bs, be).inBreak > 0).length;
-
-    html += `<div class="stats-row" style="margin-top:14px;">
-        <div class="stat"><div class="num">${nApproved}</div><div class="lbl">APPROVED</div></div>
-        <div class="stat"><div class="num">${nPending}</div><div class="lbl">PENDING</div></div>
-        <div class="stat"><div class="num">${nDenied}</div><div class="lbl">NOT APPROVED</div></div>
+    const clashes = ROLLS.filter(r => leaveWindowFor(r, adm.bs, adm.be).inBreak > 0).length;
+    html += `<div class="adm-actions" style="margin:14px 0 4px;">
+        <button class="btn primary" id="dw-csv">Download gate sheet (CSV)</button>
+        <button class="btn" id="dw-print">Print / save as PDF</button>
       </div>
-      <div class="card" style="margin-top:14px;">
-        <div style="font-size:13.5px; font-weight:600;">Approve leave for everyone</div>
-        <div class="helper-text" style="margin:3px 0 10px;">Each student's leave runs to the minute: it starts ${LEAVE_BUFFER_MIN} minutes after their last class before the break ends, and ends ${LEAVE_BUFFER_MIN} minutes before their first class after it begins — so it follows their own timetable, not the official break dates. Individual choices you make further down take priority over this.</div>
-        ${bulkOn
-          ? `<div class="badge good" style="display:inline-block; margin-bottom:10px;">Approved for all${cfg.bulk.at ? ' · ' + escapeHtml(new Date(cfg.bulk.at).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})) : ''}</div><br>
-             <button class="btn sm danger-outline" id="dw-bulk-off">Withdraw approval for all</button>`
-          : `<button class="btn primary sm" id="dw-bulk-on">Approve leave for all ${total} students</button>`}
-        ${clashes ? `<div class="helper-text" style="color:var(--warn);">⚠ ${clashes} student${clashes===1?' has':'s have'} classes scheduled inside the break dates — their window is still measured from their last class before and first class after, so check them individually.</div>` : ''}
-      </div>
-      <div class="adm-actions" style="margin-bottom:6px;">
-        <button class="btn sm primary" id="dw-csv">Download leave list (CSV)</button>
-        <button class="btn sm" id="dw-csv-approved">Approved only</button>
-      </div>
-      <h2 class="section-title">Find a student</h2>
+      <div class="helper-text" style="margin-top:4px;">All ${ROLLS.length} students, one row each, in roll-number order. Nothing is saved or shown to students.</div>
+      ${clashes ? `<div class="helper-text" style="color:var(--warn);">⚠ ${clashes} student${clashes===1?' has':'s have'} classes scheduled inside the break dates above — their window is still measured from their last class before and first class after, so double-check them.</div>` : ''}
+      <h2 class="section-title">Check a student</h2>
       <input type="text" id="dw-search" placeholder="Search by name or roll number" value="${escapeHtml(adm.query)}" autocomplete="off">
+      <label class="adm-field">Is the student free at…</label>
+      <input type="datetime-local" id="dw-at" value="${escapeHtml(adm.checkAt)}">
       <div id="dw-results" style="margin-top:10px;"></div>
-      <h2 class="section-title" id="dw-groups-title">By timetable pattern</h2>
-      <p class="helper-text" style="margin:-6px 0 10px;">Students are grouped by the exact time their last class ends and their next one starts. Tap a group to see who's in it.</p>
+      <h2 class="section-title">By timetable pattern</h2>
+      <p class="helper-text" style="margin:-6px 0 10px;">Students grouped by the exact time their last class ends and their next one starts. Tap a group to see who's in it.</p>
       <div id="dw-groups"></div>`;
     pane.innerHTML = html;
-    renderDiwaliGroups(cfg, groups);
-    renderDiwaliSearch(cfg);
+    renderDiwaliGroups();
+    renderDiwaliSearch();
   }
 
-  function leaveToggleHtml(cfg, r){
-    const s = effectiveLeaveStatus(cfg, r);
-    const label = s==='approved' ? 'Approved' : s==='denied' ? 'Not approved' : 'Pending';
-    return `<span class="adm-lv ${s==='pending'?'':s}" data-lv="${escapeHtml(r)}" title="Tap to change">${label}</span>`;
+  function freeChip(w){
+    const stamp = stampFromInput(adm.checkAt);
+    if(stamp == null) return '';
+    return isFreeAt(w, stamp) ? '<span class="badge good">Free</span>' : '<span class="badge bad">Not free</span>';
   }
-  function studentLeaveRow(cfg, r, showWindow){
-    const w = leaveWindowFor(r, cfg.breakStart, cfg.breakEnd);
-    return `<div class="adm-srow"><div class="adm-sname">${escapeHtml(DATA.students[r].name)}<div class="adm-sroll" style="white-space:normal;">${escapeHtml(r)}${showWindow ? ` · ${escapeHtml(whenLabel(w.from, w.fromTime))} → ${escapeHtml(whenLabel(w.to, w.toTime))} (${escapeHtml(w.duration)})` : ''}</div></div>${leaveToggleHtml(cfg, r)}</div>`;
+  function gateStudentRow(r, showWindow){
+    const w = leaveWindowFor(r, adm.bs, adm.be);
+    return `<div class="adm-srow"><div class="adm-sname">${escapeHtml(DATA.students[r].name)}<div class="adm-sroll" style="white-space:normal;">${escapeHtml(r)}${showWindow ? ` · ${escapeHtml(whenLabel(w.from, w.fromTime))} → ${escapeHtml(whenLabel(w.to, w.toTime))} (${escapeHtml(w.duration)})` : ''}</div></div>${showWindow ? freeChip(w) : ''}</div>`;
   }
 
-  function renderDiwaliGroups(cfg, groups){
-    document.getElementById('dw-groups').innerHTML = groups.map(g => {
-      const w = g.w;
-      const open = !!adm.groupOpen[g.key];
+  function renderDiwaliGroups(){
+    const box = document.getElementById('dw-groups');
+    if(!box) return;
+    box.innerHTML = diwaliGroups().map(g => {
+      const w = g.w, open = !!adm.groupOpen[g.key];
       const title = `${w.last ? 'Last class ends ' + whenLabel(w.last, w.lastEnd) : 'No class before break'} → ${w.first ? 'next starts ' + whenLabel(w.first, w.firstStart) : 'no class after'}`;
-      return `<div class="adm-grp ${open?'open':''}" data-gkey="${escapeHtml(g.key)}">
+      return `<div class="adm-grp ${open?'open':''}">
         <div class="adm-grp-head" data-gtoggle="${escapeHtml(g.key)}">
           <div class="row" style="align-items:flex-start;"><div class="adm-grp-title">${escapeHtml(title)}</div><span class="badge">${g.rolls.length} student${g.rolls.length===1?'':'s'}</span></div>
-          <div class="adm-grp-sub">Leave ${escapeHtml(whenLabel(w.from, w.fromTime))} → ${escapeHtml(whenLabel(w.to, w.toTime))} · ${escapeHtml(w.duration)}</div>
+          <div class="adm-grp-sub">Free ${escapeHtml(whenLabel(w.from, w.fromTime))} → ${escapeHtml(whenLabel(w.to, w.toTime))} · ${escapeHtml(w.duration)}</div>
         </div>
-        <div class="adm-grp-body">
-          <div class="adm-actions" style="margin:2px 0 6px;">
-            <button class="btn sm" data-ggrp="approved" data-gk="${escapeHtml(g.key)}">Approve this group</button>
-            <button class="btn sm" data-ggrp="clear" data-gk="${escapeHtml(g.key)}">Reset to default</button>
-          </div>
-          ${g.rolls.map(r => studentLeaveRow(cfg, r, false)).join('')}
-        </div>
+        <div class="adm-grp-body">${g.rolls.map(r => gateStudentRow(r, false)).join('')}</div>
       </div>`;
     }).join('');
   }
 
-  function renderDiwaliSearch(cfg){
+  function renderDiwaliSearch(){
     const box = document.getElementById('dw-results');
     if(!box) return;
     const q = adm.query.trim().toLowerCase();
     if(!q){ box.innerHTML = ''; return; }
     const hits = ROLLS.filter(r => DATA.students[r].name.toLowerCase().includes(q) || r.toLowerCase().includes(q)).slice(0, 25);
     box.innerHTML = hits.length
-      ? `<div class="card" style="padding:6px 14px;">${hits.map(r => studentLeaveRow(cfg, r, true)).join('')}</div>`
+      ? `<div class="card" style="padding:6px 14px;">${hits.map(r => gateStudentRow(r, true)).join('')}</div>`
       : '<div class="helper-text">No one matches.</div>';
   }
 
-  document.getElementById('adm-pane-diwali').addEventListener('input', e => {
-    if(e.target.id === 'dw-search'){ adm.query = e.target.value; if(diwaliCfg) renderDiwaliSearch(diwaliCfg); }
-  });
-  document.getElementById('adm-pane-diwali').addEventListener('click', async e => {
-    const t = e.target;
-    if(t.closest('#dw-save')){
-      const bs = document.getElementById('dw-start').value, be = document.getElementById('dw-end').value;
-      const note = document.getElementById('dw-note').value.trim();
-      const err = document.getElementById('dw-error');
-      err.textContent = '';
-      if(!bs || !be){ err.textContent = 'Enter both dates.'; return; }
-      if(bs > be){ err.textContent = 'The start date must be on or before the end date.'; return; }
-      await updateDiwali(c => { c.breakStart = bs; c.breakEnd = be; c.note = note; c.bulk = c.bulk || {approved:false}; });
-      showToast('Saved. Students now see their leave window.');
-      renderDiwaliPane();
-      return;
-    }
-    if(t.closest('#dw-bulk-on')){
-      if(!confirm(`Approve Diwali break leave for all ${ROLLS.length} students?`)) return;
-      await updateDiwali(c => { c.bulk = {approved:true, at:Date.now()}; });
-      showToast('Leave approved for all students.');
-      renderDiwaliPane();
-      return;
-    }
-    if(t.closest('#dw-bulk-off')){
-      if(!confirm('Withdraw the blanket approval? Students will go back to "awaiting approval" unless you approved them individually.')) return;
-      await updateDiwali(c => { c.bulk = {approved:false}; });
-      showToast('Blanket approval withdrawn.');
-      renderDiwaliPane();
-      return;
-    }
-    if(t.closest('#dw-csv-approved')){ exportLeaveCsv(true); return; }
-    if(t.closest('#dw-csv')){ exportLeaveCsv(false); return; }
+  function exportGateCsv(){
+    if(!adm.bs || !adm.be) return;
+    const stamp = (d, t) => `${d} ${t}`;
+    const rows = gateRows().map(({roll, name, w}) => [
+      roll, name,
+      w.last || '', w.lastEnd || '', stamp(w.from, w.fromTime),
+      w.first || '', w.firstStart || '', stamp(w.to, w.toTime),
+      w.minutes, w.duration,
+    ]);
+    downloadCsv('diwali_gate_sheet.csv',
+      ['Roll No', 'Name',
+       'Last class date', 'Last class ends', `Free from (${LEAVE_BUFFER_MIN} min after)`,
+       'First class date', 'First class starts', `Free until (${LEAVE_BUFFER_MIN} min before)`,
+       'Total minutes', 'Duration'],
+      rows);
+  }
 
-    const lv = t.closest('[data-lv]');
-    if(lv){
-      const roll = lv.dataset.lv;
-      // Cycle the individual override: default -> approved -> not approved -> default
-      // (when everyone's already approved: default -> not approved -> default).
-      await updateDiwali(c => {
-        const bulkOn = !!(c.bulk && c.bulk.approved);
-        const o = c.overrides[roll];
-        if(!o) c.overrides[roll] = bulkOn ? 'denied' : 'approved';
-        else if(o === 'approved' && !bulkOn) c.overrides[roll] = 'denied';
-        else delete c.overrides[roll];
-      });
+  function gateSheetHtml(){
+    const rows = gateRows().map(({roll, name, w}) => `<tr>
+        <td>${escapeHtml(roll)}</td><td>${escapeHtml(name)}</td>
+        <td>${escapeHtml(w.last ? whenLabel(w.last, w.lastEnd) : '—')}</td>
+        <td><b>${escapeHtml(whenLabel(w.from, w.fromTime))}</b></td>
+        <td><b>${escapeHtml(whenLabel(w.to, w.toTime))}</b></td>
+        <td>${escapeHtml(w.first ? whenLabel(w.first, w.firstStart) : '—')}</td>
+        <td>${escapeHtml(w.duration)}</td></tr>`).join('');
+    return `<!doctype html><html><head><meta charset="utf-8"><title>Diwali break — free-time gate sheet</title>
+      <style>
+        body{font-family:Arial,Helvetica,sans-serif; font-size:10px; margin:12mm; color:#111;}
+        h1{font-size:16px; margin:0 0 4px;} p{margin:0 0 10px; color:#444; font-size:10.5px;}
+        table{border-collapse:collapse; width:100%;} th,td{border:1px solid #999; padding:3px 5px; text-align:left;}
+        th{background:#e9e9e9;} td{white-space:nowrap;} thead{display:table-header-group;} tr{page-break-inside:avoid;}
+      </style></head><body>
+      <h1>Diwali break — free-time gate sheet</h1>
+      <p>Official break: ${escapeHtml(dayLabel(adm.bs))} – ${escapeHtml(dayLabel(adm.be))}. "Free from" is ${LEAVE_BUFFER_MIN} minutes after the student's last class before the break ends; "Free until" is ${LEAVE_BUFFER_MIN} minutes before their first class after it starts. The student has no scheduled class between those two times.</p>
+      <table><thead><tr><th>Roll No</th><th>Name</th><th>Last class ends</th><th>Free from</th><th>Free until</th><th>Next class starts</th><th>Free for</th></tr></thead><tbody>${rows}</tbody></table>
+      </body></html>`;
+  }
+  function printGateSheet(){
+    const f = document.createElement('iframe');
+    f.style.cssText = 'position:fixed; right:0; bottom:0; width:0; height:0; border:0;';
+    document.body.appendChild(f);
+    const doc = f.contentWindow.document;
+    doc.open(); doc.write(gateSheetHtml()); doc.close();
+    setTimeout(() => {
+      try{ f.contentWindow.focus(); f.contentWindow.print(); }
+      catch(e){ showToast("Printing isn't available here — use the CSV download instead."); }
+      setTimeout(() => f.remove(), 60000);
+    }, 300);
+  }
+
+  const dwPane = document.getElementById('adm-pane-diwali');
+  dwPane.addEventListener('input', e => {
+    if(e.target.id === 'dw-search'){ adm.query = e.target.value; renderDiwaliSearch(); }
+  });
+  dwPane.addEventListener('change', e => {
+    if(e.target.id === 'dw-start' || e.target.id === 'dw-end'){
+      adm.bs = document.getElementById('dw-start').value;
+      adm.be = document.getElementById('dw-end').value;
       renderDiwaliPane();
-      return;
     }
-    const gbtn = t.closest('[data-ggrp]');
-    if(gbtn){
-      const group = diwaliGroups(diwaliCfg).find(g => g.key === gbtn.dataset.gk);
-      if(!group) return;
-      const approve = gbtn.dataset.ggrp === 'approved';
-      await updateDiwali(c => {
-        group.rolls.forEach(r => { if(approve) c.overrides[r] = 'approved'; else delete c.overrides[r]; });
-      });
-      showToast(approve ? `Approved ${group.rolls.length} students.` : 'Reset to default.');
-      renderDiwaliPane();
-      return;
-    }
+    if(e.target.id === 'dw-at'){ adm.checkAt = e.target.value; renderDiwaliSearch(); }
+  });
+  dwPane.addEventListener('click', e => {
+    const t = e.target;
+    if(t.closest('#dw-csv')){ exportGateCsv(); return; }
+    if(t.closest('#dw-print')){ printGateSheet(); return; }
     const gh = t.closest('[data-gtoggle]');
     if(gh){
       const k = gh.dataset.gtoggle;
@@ -3272,30 +3197,6 @@ const EMBEDDED_MESS_MENU = {"month": "September 2026", "days": {"Monday": {"Brea
       gh.parentElement.classList.toggle('open', adm.groupOpen[k]);
     }
   });
-
-  function exportLeaveCsv(approvedOnly){
-    const cfg = diwaliCfg;
-    if(!cfg || !cfg.breakStart) return;
-    const stamp = (d, t) => `${d} ${t}`;
-    let rolls = ROLLS.slice().sort();
-    if(approvedOnly) rolls = rolls.filter(r => effectiveLeaveStatus(cfg, r) === 'approved');
-    if(!rolls.length){ showToast('No approved students yet.'); return; }
-    const rows = rolls.map(r => {
-      const w = leaveWindowFor(r, cfg.breakStart, cfg.breakEnd);
-      const st = effectiveLeaveStatus(cfg, r);
-      return [r, DATA.students[r].name,
-              w.last || '', w.lastEnd || '', stamp(w.from, w.fromTime),
-              w.first || '', w.firstStart || '', stamp(w.to, w.toTime),
-              w.minutes, w.duration,
-              st === 'approved' ? 'Approved' : st === 'denied' ? 'Not approved' : 'Pending'];
-    });
-    downloadCsv(approvedOnly ? 'diwali_leave_approved.csv' : 'diwali_leave_list.csv',
-      ['Roll No', 'Name',
-       'Last class date', 'Last class ends', `Leave starts (${LEAVE_BUFFER_MIN} min after)`,
-       'First class date', 'First class starts', `Leave ends (${LEAVE_BUFFER_MIN} min before)`,
-       'Total minutes', 'Duration', 'Status'],
-      rows);
-  }
 
   document.getElementById('adm-tabs').addEventListener('click', e => {
     const p = e.target.closest('.pill');
@@ -3469,7 +3370,6 @@ const EMBEDDED_MESS_MENU = {"month": "September 2026", "days": {"Monday": {"Brea
     } else {
       showView('onboard');
     }
-    loadDiwali().then(()=>{ if(state.currentView==='dashboard') renderLeaveCard(); });
 
     // Fetch the live sheet right away, then keep polling in the background so
     // the schedule stays current without a manual refresh.
